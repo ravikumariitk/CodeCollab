@@ -36,12 +36,12 @@ const EditorPage = () => {
     useEffect(() => {
         const init = async () => {
             socketRef.current = await initSocket();
-            console.log("socket",socketRef.current)
+            // console.log("socket",socketRef.current)
             socketRef.current.on('connect_error', (err) => handleErrors(err));
             socketRef.current.on('connect_failed', (err) => handleErrors(err));
 
             function handleErrors(e) {
-                console.log('socket error', e);
+                // console.log('socket error', e);
                 toast.error('Connection failed, try again later.');
                 reactNavigator('/');
             }
@@ -57,20 +57,20 @@ const EditorPage = () => {
                 ({ clients, username, socketId }) => {
                     if (username !== location.state?.username) {
                         toast.success(`${username} joined the room.`);
-                        console.log(`${username} joined`);
+                        // console.log(`${username} joined`);
                     }
                     setClients(clients);
+                    // console.log("Clients : ",clients)
                     socketRef.current.emit(ACTIONS.SYNC_CODE, {
                         code: codeRef.current,
                         socketId,
                     });
                 }
             );
-            console.log(clients)
             socketRef.current.on(
                 'video-incoming',
-                ({ videoFrame,socketId }) => {
-                    console.log("Getting video from : ", socketId);
+                ({ videoFrame,socketId, username }) => {
+                    // console.log("Getting video from : ", username);
                     setPartnerVideo((prev)=>{
                        for(let i=0;i<prev.length;i++){
                           if(prev[i].socketId === socketId)
@@ -79,7 +79,11 @@ const EditorPage = () => {
                             return [...prev];
                           }
                        }
-                        return [...prev,{videoData:videoFrame, socketId : socketId}] 
+                       
+                       
+                    //    console.log("wewewefwe",clients,socketId)
+                    
+                        return [...prev,{videoData:videoFrame, socketId : socketId , username : username}]
                     });
                 }
             );
@@ -136,7 +140,7 @@ const EditorPage = () => {
             });
             // Output result
             const { run } = response.data;
-            console.log(response)
+            // console.log(response)
             setIsRunning(false)
             if (!run.stdout) toast.error('Compilation Failed');
             else toast.success('Compilation Successful');

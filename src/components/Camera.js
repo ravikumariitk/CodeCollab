@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import Webcam from "react-webcam";
 
 const videoConstraints = {
@@ -23,22 +24,23 @@ const Camera = ({ socket_ref , roomId }) => {
   };
 
   // Initialize webcam stream when video is shown
+  const initializeWebcam = () => {
+    navigator.mediaDevices
+      .getUserMedia({ video: videoConstraints, audio })
+      .then((stream) => {
+        if (webcamRef.current) {
+          webcamRef.current.video.srcObject = stream;
+          setStream(stream);
+          // Start emitting video frames to the server
+          sendVideoStream(stream);
+        }
+      })
+      .catch((err) => {
+        console.error("Error starting webcam:", err);
+      });
+  };
   useEffect(() => {
-    const initializeWebcam = () => {
-        navigator.mediaDevices
-          .getUserMedia({ video: videoConstraints, audio })
-          .then((stream) => {
-            if (webcamRef.current) {
-              webcamRef.current.video.srcObject = stream;
-              setStream(stream);
-              // Start emitting video frames to the server
-              sendVideoStream(stream);
-            }
-          })
-          .catch((err) => {
-            console.error("Error starting webcam:", err);
-          });
-      };
+    
       
       initializeWebcam();
     return () => {
@@ -62,12 +64,14 @@ const Camera = ({ socket_ref , roomId }) => {
   }
 
   function handleVideo() {
-    // if (!video) {
-    //   initializeWebcam();
-    // } else {
-    //   cleanupWebcam();
-    // }
-    // setVideo(!video); // Toggle video visibility
+    if (!video) {
+        toast.success("You are visible now")
+      initializeWebcam();
+    } else {
+      cleanupWebcam();
+      toast.success("You are hidden now")
+    }
+    setVideo(!video); // Toggle video visibility
   }
 
   // Send webcam video frames to the server
@@ -76,7 +80,7 @@ const Camera = ({ socket_ref , roomId }) => {
     const videoStream = new MediaStream([videoTrack]);
     const videoElement = document.createElement("video");
     videoElement.srcObject = videoStream;
-    console.log("socke",socket_ref)
+    // console.log("socke",socket_ref)
     // When the video element starts playing, capture frames and send them
     videoElement.onplay = () => {
       setInterval(() => {
@@ -85,13 +89,13 @@ const Camera = ({ socket_ref , roomId }) => {
           const context = canvas.getContext("2d");
           context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
           const frameData = canvas.toDataURL("image/jpeg"); // Convert to base64 string
-            console.log("Emmiting ")
+            // console.log("Emmiting ")
           // Emit the frame data to the server
           const data ={frameData: frameData, roomId:roomId , socketId : socket_ref.current.id }
-          console.log(data)
+        //   console.log(data)
           socket_ref.current.emit("video-stream", data);
         }
-      }, 100); // Send a frame every 100ms (adjust as needed)
+      }, 1); // Send a frame every 100ms (adjust as needed)
     };
 
     videoElement.play();

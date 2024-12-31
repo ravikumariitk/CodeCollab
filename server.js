@@ -54,7 +54,8 @@ io.on('connection', (socket) => {
         const videoFrame = data.frameData;
         socket.in(data.roomId).emit('video-incoming', {
             videoFrame : videoFrame,
-            socketId : data.socketId
+            socketId : data.socketId,
+            username : userSocketMap[data.socketId]
         });
       });
 
