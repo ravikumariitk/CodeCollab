@@ -8,6 +8,8 @@ import axios from 'axios';
 import Webcam from "react-webcam"
 import Camera from '../components/Camera';
 import Partner from '../components/Partner';
+import Peer from 'peerjs';
+
 import {
     useLocation,
     useNavigate,
@@ -25,6 +27,11 @@ const EditorPage = () => {
     const [theme, setTheme] = useState("")
     const [isRunning, setIsRunning] = useState(false)
     const [partnerVideo, setPartnerVideo] = useState([]);
+    const [peerId, setPeerId] = useState('');
+    const [remotePeerIdValue, setRemotePeerIdValue] = useState('');
+    const remoteVideoRef = useRef(null);
+    const currentUserVideoRef = useRef(null);
+    const peerInstance = useRef(null);
 
     const socketRef = useRef(null);
     const codeRef = useRef(null);
@@ -33,13 +40,34 @@ const EditorPage = () => {
     const reactNavigator = useNavigate();
     const [clients, setClients] = useState([]);
 
+    
     useEffect(() => {
+       
+
         const init = async () => {
             socketRef.current = await initSocket();
-            // console.log("socket",socketRef.current)
+            console.log("socket",socketRef.current)
             socketRef.current.on('connect_error', (err) => handleErrors(err));
             socketRef.current.on('connect_failed', (err) => handleErrors(err));
 
+           const peer = new Peer();
+        peer.on('open', (id) => {
+          setPeerId(id)
+          console.log(id);
+        });
+        peer.on('call', (call) => {
+          var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+          getUserMedia({ video: true, audio: true }, (mediaStream) => {
+            currentUserVideoRef.current.srcObject = mediaStream;
+            currentUserVideoRef.current.play();
+            call.answer(mediaStream)
+            call.on('stream', function(remoteStream) {
+              remoteVideoRef.current.srcObject = remoteStream
+              remoteVideoRef.current.play();
+            });
+          });
+        })
+        peerInstance.current = peer;
             function handleErrors(e) {
                 // console.log('socket error', e);
                 toast.error('Connection failed, try again later.');
@@ -67,26 +95,23 @@ const EditorPage = () => {
                     });
                 }
             );
-            socketRef.current.on(
-                'video-incoming',
-                ({ videoFrame,socketId, username }) => {
-                    // console.log("Getting video from : ", username);
-                    setPartnerVideo((prev)=>{
-                       for(let i=0;i<prev.length;i++){
-                          if(prev[i].socketId === socketId)
-                          {
-                            prev[i].videoData = videoFrame
-                            return [...prev];
-                          }
-                       }
-                       
-                       
-                    //    console.log("wewewefwe",clients,socketId)
-                    
-                        return [...prev,{videoData:videoFrame, socketId : socketId , username : username}]
-                    });
-                }
-            );
+            // socketRef.current.on(
+            //     'video-incoming',
+            //     ({ videoFrame,socketId, username }) => {
+            //         // console.log("Getting video from : ", username);
+            //         setPartnerVideo((prev)=>{
+            //            for(let i=0;i<prev.length;i++){
+            //               if(prev[i].socketId === socketId)
+            //               {
+            //                 prev[i].videoData = videoFrame
+            //                 return [...prev];
+            //               }
+            //            }
+            //         //    console.log("wewewefwe",clients,socketId)
+            //             return [...prev,{videoData:videoFrame, socketId : socketId , username : username}]
+            //         });
+            //     }
+            // );
             // Listening for disconnected
             socketRef.current.on(
                 ACTIONS.DISCONNECTED,
@@ -110,12 +135,29 @@ const EditorPage = () => {
             );
         };
         init();
-        return () => {
+    
+    return () => {
             socketRef.current.disconnect();
             socketRef.current.off(ACTIONS.JOINED);
             socketRef.current.off(ACTIONS.DISCONNECTED);
         };
     }, []);
+    const call = (remotePeerId) => {
+        var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    
+        getUserMedia({ video: true, audio: true }, (mediaStream) => {
+    
+          currentUserVideoRef.current.srcObject = mediaStream;
+          currentUserVideoRef.current.play();
+    
+          const call = peerInstance.current.call(remotePeerId, mediaStream)
+    
+          call.on('stream', (remoteStream) => {
+            remoteVideoRef.current.srcObject = remoteStream
+            remoteVideoRef.current.play();
+          });
+        });
+      }
 
     async function copyRoomId() {
         try {
