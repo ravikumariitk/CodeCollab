@@ -5,7 +5,9 @@ import Client from '../components/Client';
 import Editor from '../components/Editor';
 import { initSocket } from '../socket';
 import axios from 'axios';
-
+import Webcam from "react-webcam"
+import Camera from '../components/Camera';
+import Partner from '../components/Partner';
 import {
     useLocation,
     useNavigate,
@@ -13,6 +15,7 @@ import {
     useParams,
 } from 'react-router-dom';
 
+// const WebcamComponent = () => <Webcam />
 const EditorPage = () => {
     const [run, setRun] = useState("Run Code");
     const [input, setInput] = useState("");
@@ -21,6 +24,7 @@ const EditorPage = () => {
     const [language, setLanguage] = useState("cpp")
     const [theme, setTheme] = useState("")
     const [isRunning, setIsRunning] = useState(false)
+    const [partnerVideo, setPartnerVideo] = useState([]);
 
     const socketRef = useRef(null);
     const codeRef = useRef(null);
@@ -32,6 +36,7 @@ const EditorPage = () => {
     useEffect(() => {
         const init = async () => {
             socketRef.current = await initSocket();
+            console.log("socket",socketRef.current)
             socketRef.current.on('connect_error', (err) => handleErrors(err));
             socketRef.current.on('connect_failed', (err) => handleErrors(err));
 
@@ -61,12 +66,37 @@ const EditorPage = () => {
                     });
                 }
             );
-
+            console.log(clients)
+            socketRef.current.on(
+                'video-incoming',
+                ({ videoFrame,socketId }) => {
+                    console.log("Getting video from : ", socketId);
+                    setPartnerVideo((prev)=>{
+                       for(let i=0;i<prev.length;i++){
+                          if(prev[i].socketId === socketId)
+                          {
+                            prev[i].videoData = videoFrame
+                            return [...prev];
+                          }
+                       }
+                        return [...prev,{videoData:videoFrame, socketId : socketId}] 
+                    });
+                }
+            );
             // Listening for disconnected
             socketRef.current.on(
                 ACTIONS.DISCONNECTED,
                 ({ socketId, username }) => {
                     toast.success(`${username} left the room.`);
+                    setPartnerVideo((prev)=>{
+                        for(let i=0;i<prev.length;i++){
+                           if(prev[i].socketId === socketId)
+                           {
+                             prev.splice(i,1);
+                             return prev;
+                           }
+                        }
+                     });
                     setClients((prev) => {
                         return prev.filter(
                             (client) => client.socketId !== socketId
@@ -143,10 +173,9 @@ const EditorPage = () => {
                             />
                         ))}
                     </div> */}
-                   
-                   
+                   <Camera socket_ref={socketRef} roomId = {roomId}> </Camera>
+                   <Partner videoFrames = {partnerVideo} ></Partner>
                 </div>
-                
                 <button className="btn leaveBtn" onClick={copyRoomId}>
                     Copy ROOM ID
                 </button>
@@ -213,9 +242,8 @@ const EditorPage = () => {
     </div>
   </div>
 </div>
-
             </div>
-
+        
         </div>
     );
 };

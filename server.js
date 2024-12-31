@@ -50,6 +50,14 @@ io.on('connection', (socket) => {
         io.to(socketId).emit(ACTIONS.CODE_CHANGE, { code });
     });
 
+    socket.on("video-stream", (data) => {
+        const videoFrame = data.frameData;
+        socket.in(data.roomId).emit('video-incoming', {
+            videoFrame : videoFrame,
+            socketId : data.socketId
+        });
+      });
+
     socket.on('disconnecting', () => {
         const rooms = [...socket.rooms];
         rooms.forEach((roomId) => {

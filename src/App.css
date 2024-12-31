@@ -200,7 +200,7 @@ footer a:hover {
   }
   
   textarea {
-    width: 100%;
+    width: 98%;
     background: #000;
     color: #0f0;
     border: none;
@@ -224,3 +224,9 @@ footer a:hover {
     border-radius: 5px;
   }
   
+
+.VideoDiv{
+    height: 150px;
+    width: 200px ;
+    background-image: './logo192.png';
+}
