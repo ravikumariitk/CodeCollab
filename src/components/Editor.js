@@ -23,7 +23,7 @@ const Editor = ({ socketRef, roomId, onCodeChange , setCode, theme, language}) =
                     lineNumbers: true,
                 }
             );
-
+            editorRef.current.setSize('100%', '50px');
             editorRef.current.on('change', (instance, changes) => {
                 const { origin } = changes;
                 const code = instance.getValue();

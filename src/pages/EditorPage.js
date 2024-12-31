@@ -17,10 +17,10 @@ const EditorPage = () => {
     const [run, setRun] = useState("Run Code");
     const [input, setInput] = useState("");
     const [output, setOutput] = useState("");
-    const[code , setCode] = useState("")
-    const [language,setLanguage] = useState("cpp")
-    const [theme , setTheme] = useState("")
-    const [isRunning , setIsRunning] = useState(false)
+    const [code, setCode] = useState("")
+    const [language, setLanguage] = useState("cpp")
+    const [theme, setTheme] = useState("")
+    const [isRunning, setIsRunning] = useState(false)
 
     const socketRef = useRef(null);
     const codeRef = useRef(null);
@@ -96,25 +96,25 @@ const EditorPage = () => {
     const runCode = async () => {
 
         try {
-          setIsRunning(true)
-          toast.success('Code Submitted');
-          const response = await axios.post('https://emkc.org/api/v2/piston/execute', {
-            language, // Language like 'python', 'javascript', 'cpp'
-            version: '*', // Latest version
-            files: [{ name: 'main', content: code }], // Code content
-            stdin: input, // Standard input
-          });
-          // Output result
-          const { run } = response.data;
-          console.log(run.stdout)
-          setIsRunning(false)
-          if(!run.stdout)  toast.error('Compilation Failed');
-          else toast.success('Compilation Successful');
-          setOutput(run.stdout || run.stderr || 'No output');
+            setIsRunning(true)
+            toast.success('Code Submitted');
+            const response = await axios.post('https://emkc.org/api/v2/piston/execute', {
+                language, // Language like 'python', 'javascript', 'cpp'
+                version: '*', // Latest version
+                files: [{ name: 'main', content: code }], // Code content
+                stdin: input, // Standard input
+            });
+            // Output result
+            const { run } = response.data;
+            console.log(response)
+            setIsRunning(false)
+            if (!run.stdout) toast.error('Compilation Failed');
+            else toast.success('Compilation Successful');
+            setOutput(run.stdout || run.stderr || 'No output');
         } catch (error) {
-          setOutput('Error: Unable to execute the code');
+            setOutput('Error: Unable to execute the code');
         }
-      };
+    };
     function leaveRoom() {
         reactNavigator('/');
     }
@@ -143,28 +143,10 @@ const EditorPage = () => {
                             />
                         ))}
                     </div> */}
-                    <br />
-                    <span> Language : <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-          <option value="cpp">C++</option>
-          <option value="javascript">Java Script</option>
-          <option value="Python">Python</option>
-        </select></span> <br />
-
-                <span> Theme : <select value={theme} onChange={(e) => setTheme(e.target.value)}>
-          <option value="dracula">Dracula</option>
-          <option value="material">Material</option>
-        </select></span> <br />
-                <div> Input : </div> 
-                <textarea rows="5" cols="23" onChange={(e)=>{
-                    setInput(e.target.value);
-                }}></textarea>
-                <br />
-                <div>Output : </div>
-                <textarea rows="16" cols="23" value={output}></textarea>
+                   
+                   
                 </div>
-                <button disabled={isRunning} className="btn leaveBtn" onClick={runCode}>
-                   {isRunning ? "Running" : "Run Code"}
-                </button>
+                
                 <button className="btn leaveBtn" onClick={copyRoomId}>
                     Copy ROOM ID
                 </button>
@@ -179,13 +161,61 @@ const EditorPage = () => {
                     onCodeChange={(code) => {
                         codeRef.current = code;
                     }}
-                    setCode = {setCode}
+                    setCode={setCode}
                     theme
                     language
                 />
-                
+               <div className="codeTerminal">
+  <div className="terminalHeader">
+    <span>
+      Language: 
+      <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+        <option value="cpp">C++</option>
+        <option value="javascript">JavaScript</option>
+        <option value="python">Python</option>
+      </select>
+    </span>
+    {/* <span>
+      Theme: 
+      <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+        <option value="dracula">Dracula</option>
+        <option value="material">Material</option>
+      </select>
+    </span> */}
+    <span>
+      <button 
+        disabled={isRunning} 
+        className="runButton" 
+        onClick={runCode}>
+        {isRunning ? "Running..." : "Run Code"}
+      </button>
+    </span>
+  </div>
+
+  <div className="terminalBody">
+    <div className="inputSection">
+      <label>Input:</label>
+      <textarea 
+        rows="4" 
+        placeholder="Enter input here..." 
+        onChange={(e) => setInput(e.target.value)}
+      ></textarea>
+    </div>
+
+    <div className="outputSection">
+      <label>Output:</label>
+      <textarea 
+        rows="6" 
+        readOnly 
+        value={output} 
+        placeholder="Output will be displayed here..."
+      ></textarea>
+    </div>
+  </div>
+</div>
+
             </div>
-            
+
         </div>
     );
 };

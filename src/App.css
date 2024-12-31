@@ -136,8 +136,91 @@ footer a:hover {
     margin-top: 20px;
 }
 .CodeMirror {
-    min-height: calc(100vh - 20px);
-    font-size: 20px;
-    line-height: 1.6;
+    min-height: calc(53vh);
+    font-size: 15px;
+    line-height: 1;
     padding-top: 20px;
 }
+
+.codeTerminal {
+    background-color: #1e1e2f;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: 'Courier New', Courier, monospace;
+  }
+  
+  .terminalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .terminalHeader span {
+    margin-right: 15px;
+  }
+  
+  .terminalHeader select, 
+  .terminalHeader button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 3px;
+    font-size: 14px;
+  }
+  
+  .runButton {
+    background-color: #4aed88;
+    color: #000;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .runButton:disabled {
+    background-color: #999;
+    cursor: not-allowed;
+  }
+  
+  .runButton:hover:enabled {
+    background-color: #368654;
+  }
+  
+  .terminalBody {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .inputSection, .outputSection {
+    display: flex;
+    flex-direction: column;
+    background: #2b2b3c;
+    padding: 10px;
+    border-radius: 5px;
+  }
+  
+  textarea {
+    width: 100%;
+    background: #000;
+    color: #0f0;
+    border: none;
+    padding: 10px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    resize: none;
+    border-radius: 3px;
+  }
+  
+  textarea:focus {
+    outline: 2px solid #4aed88;
+  }
+  
+  .detailsSection {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    padding: 10px;
+    background: #2b2b3c;
+    border-radius: 5px;
+  }
+  
