@@ -10,6 +10,7 @@ function Camera({ socketId, clients }) {
   const localStream = useRef(null); // Store the local media stream
   const [videoEnabled, setVideoEnabled] = useState(true);  // React state for video enable
   const [audioEnabled, setAudioEnabled] = useState(true);  // React state for audio enable
+  const retryTimeouts = useRef({}); // Store retry timeouts for unreachable peers
 
   // useEffect to initialize PeerJS and get user media
   useEffect(() => {
@@ -24,6 +25,7 @@ function Camera({ socketId, clients }) {
 
     peer.on('error', (err) => {
       console.error('Peer.js Error:', err);
+      toast.error('Peer connection error. Please try again later.');
     });
 
     peer.on('call', (call) => {
@@ -36,13 +38,17 @@ function Camera({ socketId, clients }) {
         if (videoElement) {
           videoElement.srcObject = remoteStream;
 
-          // Wait for the video element to load metadata before playing
           videoElement.onloadedmetadata = () => {
             videoElement.play().catch((err) => {
               console.error('Video play error:', err);
             });
           };
         }
+      });
+
+      call.on('error', (err) => {
+        console.error(`Error during call with ${call.peer}:`, err);
+        toast.error(`Call with ${call.peer} failed.`);
       });
     });
 
@@ -56,7 +62,6 @@ function Camera({ socketId, clients }) {
         currentUserVideoRef.current.srcObject = stream;
         currentUserVideoRef.current.muted = true; // Mute local video playback
 
-        // Wait for metadata to load before playing
         currentUserVideoRef.current.onloadedmetadata = () => {
           currentUserVideoRef.current
             .play()
@@ -65,6 +70,7 @@ function Camera({ socketId, clients }) {
       })
       .catch((err) => {
         console.error('Failed to access user media', err);
+        toast.error('Failed to access user media');
       });
 
     return () => {
@@ -72,41 +78,62 @@ function Camera({ socketId, clients }) {
       if (localStream.current) {
         localStream.current.getTracks().forEach((track) => track.stop());
       }
+
+      Object.values(retryTimeouts.current).forEach(clearTimeout);
     };
   }, [socketId]);
 
   // useEffect to trigger call only when new clients join
   useEffect(() => {
-    // Call new clients when clients list changes
     if (clients.length > 0 && localStream.current) {
       clients.forEach((client) => {
         if (client.socketId !== socketId) {
-          call(client.socketId, client.socketId); // Call new client
+          initiateCallWithRetry(client.socketId, client.socketId);
         }
       });
     }
-  }, [clients]); // This useEffect runs whenever `clients` updates
+  }, [clients]);
 
-  const call = useCallback(
-    (remotePeerId, socketId) => {
-      if (!localStream.current) return;
+  const initiateCallWithRetry = useCallback((remotePeerId, socketId, retries = 3) => {
+    if (retries <= 0) {
+      console.warn(`Failed to connect to peer ${remotePeerId} after multiple attempts.`);
+      toast.error(`Unable to connect to ${socketId} after several retries.`);
+      return;
+    }
 
-      const call = peerInstance.current.call(remotePeerId, localStream.current);
+    console.log(`Attempting to call ${remotePeerId}. Remaining retries: ${retries}`);
 
-      call.on('stream', (remoteStream) => {
-        const videoElement = remoteVideoRefs.current[socketId];
-        if (videoElement) {
-          videoElement.srcObject = remoteStream;
-          if (videoElement.paused) {
-            videoElement.play().catch((err) => {
-              console.error('Remote video play error:', err);
-            });
-          }
+    const call = peerInstance.current.call(remotePeerId, localStream.current);
+
+    call.on('stream', (remoteStream) => {
+      const videoElement = remoteVideoRefs.current[socketId];
+      if (videoElement) {
+        videoElement.srcObject = remoteStream;
+        if (videoElement.paused) {
+          videoElement.play().catch((err) => {
+            console.error('Remote video play error:', err);
+          });
         }
-      });
-    },
-    []
-  );
+      }
+    });
+
+    call.on('error', (err) => {
+      console.error(`Call to ${remotePeerId} failed:`, err);
+      toast.error(`Call to ${socketId} failed. Retrying...`);
+
+      // Retry after a delay
+      retryTimeouts.current[socketId] = setTimeout(() => {
+        initiateCallWithRetry(remotePeerId, socketId, retries - 1);
+      }, 3000); // Retry after 3 seconds
+    });
+
+    // Clear the retry timeout on success
+    call.on('close', () => {
+      if (retryTimeouts.current[socketId]) {
+        clearTimeout(retryTimeouts.current[socketId]);
+      }
+    });
+  }, []);
 
   const handleAudio = () => {
     setAudioEnabled((prevAudioState) => {
