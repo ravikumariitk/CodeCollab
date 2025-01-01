@@ -155,10 +155,11 @@ const EditorPage = () => {
                     <div className="logo">
                         <img
                             className="logoImage"
-                            src="/code-sync.png"
+                            src="/logo-dark1.png"
                             alt="logo"
                         />
                     </div>
+                    <br />
                     {/* <h3>Connected</h3>
                     <div className="clientsList">
                         {clients.map((client) => (
