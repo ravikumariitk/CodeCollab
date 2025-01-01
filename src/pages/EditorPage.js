@@ -4,18 +4,16 @@ import ACTIONS from '../Actions';
 import Client from '../components/Client';
 import Editor from '../components/Editor';
 import { initSocket } from '../socket';
+import Peer from 'peerjs'
 import axios from 'axios';
-import Webcam from "react-webcam"
 import Camera from '../components/Camera';
-import Partner from '../components/Partner';
-import Peer from 'peerjs';
-
 import {
     useLocation,
     useNavigate,
     Navigate,
     useParams,
 } from 'react-router-dom';
+import { use } from 'react';
 
 // const WebcamComponent = () => <Webcam />
 const EditorPage = () => {
@@ -26,12 +24,11 @@ const EditorPage = () => {
     const [language, setLanguage] = useState("cpp")
     const [theme, setTheme] = useState("")
     const [isRunning, setIsRunning] = useState(false)
-    const [partnerVideo, setPartnerVideo] = useState([]);
-    const [peerId, setPeerId] = useState('');
-    const [remotePeerIdValue, setRemotePeerIdValue] = useState('');
-    const remoteVideoRef = useRef(null);
-    const currentUserVideoRef = useRef(null);
-    const peerInstance = useRef(null);
+    const [socketId , setSocketId] = useState("")
+    const [peerId , setPeerId] = useState('')
+    const[isDownloaded , setIsDownloaded] = useState(false)
+    const[isDownloading , setIsDownloading] = useState(false)
+
 
     const socketRef = useRef(null);
     const codeRef = useRef(null);
@@ -49,31 +46,12 @@ const EditorPage = () => {
             console.log("socket",socketRef.current)
             socketRef.current.on('connect_error', (err) => handleErrors(err));
             socketRef.current.on('connect_failed', (err) => handleErrors(err));
-
-           const peer = new Peer();
-        peer.on('open', (id) => {
-          setPeerId(id)
-          console.log(id);
-        });
-        peer.on('call', (call) => {
-          var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-          getUserMedia({ video: true, audio: true }, (mediaStream) => {
-            currentUserVideoRef.current.srcObject = mediaStream;
-            currentUserVideoRef.current.play();
-            call.answer(mediaStream)
-            call.on('stream', function(remoteStream) {
-              remoteVideoRef.current.srcObject = remoteStream
-              remoteVideoRef.current.play();
-            });
-          });
-        })
-        peerInstance.current = peer;
+            // console.log("Socket Id", socketRef.current.id)
             function handleErrors(e) {
                 // console.log('socket error', e);
                 toast.error('Connection failed, try again later.');
                 reactNavigator('/');
             }
-
             socketRef.current.emit(ACTIONS.JOIN, {
                 roomId,
                 username: location.state?.username,
@@ -85,7 +63,10 @@ const EditorPage = () => {
                 ({ clients, username, socketId }) => {
                     if (username !== location.state?.username) {
                         toast.success(`${username} joined the room.`);
-                        // console.log(`${username} joined`);
+                        console.log(`${username} joined`);
+                    }else{
+                        console.log("Socket ID :",socketId)
+                        setSocketId(socketId);
                     }
                     setClients(clients);
                     // console.log("Clients : ",clients)
@@ -95,23 +76,6 @@ const EditorPage = () => {
                     });
                 }
             );
-            // socketRef.current.on(
-            //     'video-incoming',
-            //     ({ videoFrame,socketId, username }) => {
-            //         // console.log("Getting video from : ", username);
-            //         setPartnerVideo((prev)=>{
-            //            for(let i=0;i<prev.length;i++){
-            //               if(prev[i].socketId === socketId)
-            //               {
-            //                 prev[i].videoData = videoFrame
-            //                 return [...prev];
-            //               }
-            //            }
-            //         //    console.log("wewewefwe",clients,socketId)
-            //             return [...prev,{videoData:videoFrame, socketId : socketId , username : username}]
-            //         });
-            //     }
-            // );
             // Listening for disconnected
             socketRef.current.on(
                 ACTIONS.DISCONNECTED,
@@ -135,8 +99,8 @@ const EditorPage = () => {
             );
         };
         init();
-    
-    return () => {
+
+        return () => {
             socketRef.current.disconnect();
             socketRef.current.off(ACTIONS.JOINED);
             socketRef.current.off(ACTIONS.DISCONNECTED);
@@ -170,7 +134,6 @@ const EditorPage = () => {
     }
 
     const runCode = async () => {
-
         try {
             setIsRunning(true)
             toast.success('Code Submitted');
@@ -198,7 +161,24 @@ const EditorPage = () => {
     if (!location.state) {
         return <Navigate to="/" />;
     }
-
+      function downloadCode(){
+        setIsDownloading(true);
+        setTimeout(() => {
+            function getExtension(lang){
+                if(lang == 'javascript') return "js";
+                if(lang == 'python') return "py";
+                if(lang == 'cpp') return "cpp";
+            }
+            const blob = new Blob([code], { type: 'text/plain' }); // text/plain for C++ code
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `program.${getExtension(language)}`; // You can change the file name here
+            link.click();
+            setIsDownloading(false);
+            setIsDownloaded(true)
+        }, 1000);
+       
+    }
     return (
         <div className="mainWrap">
             <div className="aside">
@@ -219,9 +199,10 @@ const EditorPage = () => {
                             />
                         ))}
                     </div> */}
-                   <Camera socket_ref={socketRef} roomId = {roomId}> </Camera>
-                   <Partner videoFrames = {partnerVideo} ></Partner>
+
+                <><Camera socketId = {socketId} clients = {clients}></Camera></>
                 </div>
+
                 <button className="btn leaveBtn" onClick={copyRoomId}>
                     Copy ROOM ID
                 </button>
@@ -240,54 +221,62 @@ const EditorPage = () => {
                     theme
                     language
                 />
-               <div className="codeTerminal">
-  <div className="terminalHeader">
-    <span>
-      Language: 
-      <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-        <option value="cpp">C++</option>
-        <option value="javascript">JavaScript</option>
-        <option value="python">Python</option>
-      </select>
-    </span>
-    {/* <span>
+                <div className="codeTerminal">
+                    <div className="terminalHeader">
+                        <span>
+                            Language:
+                            <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+                                <option value="cpp">C++</option>
+                                <option value="javascript">JavaScript</option>
+                                <option value="python">Python</option>
+                            </select>
+                        </span>
+                        {/* <span>
       Theme: 
       <select value={theme} onChange={(e) => setTheme(e.target.value)}>
         <option value="dracula">Dracula</option>
         <option value="material">Material</option>
       </select>
     </span> */}
-    <span>
-      <button 
-        disabled={isRunning} 
-        className="runButton" 
-        onClick={runCode}>
-        {isRunning ? "Running..." : "Run Code"}
-      </button>
-    </span>
-  </div>
+                        <span>
+                            <button
+                                disabled={isRunning}
+                                className="runButton"
+                                onClick={runCode}>
+                                {isRunning ? "Running..." : "Run Code"}
+                            </button>
+                            &nbsp;
+                            <button
+                                disabled={isRunning}
+                                className="runButton"
+                                onClick={downloadCode}>
+                                {isDownloaded ? "Download Again" : (isDownloading? "Downloading...":"Download Code")}
+                            </button>
+                        </span>
+                    </div>
 
-  <div className="terminalBody">
-    <div className="inputSection">
-      <label>Input:</label>
-      <textarea 
-        rows="4" 
-        placeholder="Enter input here..." 
-        onChange={(e) => setInput(e.target.value)}
-      ></textarea>
-    </div>
+                    <div className="terminalBody">
+                        <div className="inputSection">
+                            <label>Input:</label>
+                            <textarea
+                                rows="4"
+                                placeholder="Enter input here..."
+                                onChange={(e) => setInput(e.target.value)}
+                            ></textarea>
+                        </div>
 
-    <div className="outputSection">
-      <label>Output:</label>
-      <textarea 
-        rows="6" 
-        readOnly 
-        value={output} 
-        placeholder="Output will be displayed here..."
-      ></textarea>
-    </div>
-  </div>
-</div>
+                        <div className="outputSection">
+                            <label>Output:</label>
+                            <textarea
+                                rows="6"
+                                readOnly
+                                value={output}
+                                placeholder="Output will be displayed here..."
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         
         </div>

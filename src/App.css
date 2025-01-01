@@ -224,9 +224,6 @@ footer a:hover {
     border-radius: 5px;
   }
   
-
-.VideoDiv{
+  .video{
     height: 150px;
-    width: 200px ;
-    background-image: './logo192.png';
-}
+  }
