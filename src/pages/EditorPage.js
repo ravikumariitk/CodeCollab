@@ -15,7 +15,6 @@ import {
 } from 'react-router-dom';
 import { use } from 'react';
 
-// const WebcamComponent = () => <Webcam />
 const EditorPage = () => {
     const [run, setRun] = useState("Run Code");
     const [input, setInput] = useState("");
@@ -37,18 +36,14 @@ const EditorPage = () => {
     const reactNavigator = useNavigate();
     const [clients, setClients] = useState([]);
 
-    
     useEffect(() => {
-       
-
         const init = async () => {
             socketRef.current = await initSocket();
-            console.log("socket",socketRef.current)
             socketRef.current.on('connect_error', (err) => handleErrors(err));
             socketRef.current.on('connect_failed', (err) => handleErrors(err));
             // console.log("Socket Id", socketRef.current.id)
             function handleErrors(e) {
-                // console.log('socket error', e);
+                console.log('socket error', e);
                 toast.error('Connection failed, try again later.');
                 reactNavigator('/');
             }
@@ -69,7 +64,6 @@ const EditorPage = () => {
                         setSocketId(socketId);
                     }
                     setClients(clients);
-                    // console.log("Clients : ",clients)
                     socketRef.current.emit(ACTIONS.SYNC_CODE, {
                         code: codeRef.current,
                         socketId,
@@ -81,15 +75,6 @@ const EditorPage = () => {
                 ACTIONS.DISCONNECTED,
                 ({ socketId, username }) => {
                     toast.success(`${username} left the room.`);
-                    setPartnerVideo((prev)=>{
-                        for(let i=0;i<prev.length;i++){
-                           if(prev[i].socketId === socketId)
-                           {
-                             prev.splice(i,1);
-                             return prev;
-                           }
-                        }
-                     });
                     setClients((prev) => {
                         return prev.filter(
                             (client) => client.socketId !== socketId
@@ -106,22 +91,6 @@ const EditorPage = () => {
             socketRef.current.off(ACTIONS.DISCONNECTED);
         };
     }, []);
-    const call = (remotePeerId) => {
-        var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-    
-        getUserMedia({ video: true, audio: true }, (mediaStream) => {
-    
-          currentUserVideoRef.current.srcObject = mediaStream;
-          currentUserVideoRef.current.play();
-    
-          const call = peerInstance.current.call(remotePeerId, mediaStream)
-    
-          call.on('stream', (remoteStream) => {
-            remoteVideoRef.current.srcObject = remoteStream
-            remoteVideoRef.current.play();
-          });
-        });
-      }
 
     async function copyRoomId() {
         try {
@@ -145,7 +114,7 @@ const EditorPage = () => {
             });
             // Output result
             const { run } = response.data;
-            // console.log(response)
+            console.log(response)
             setIsRunning(false)
             if (!run.stdout) toast.error('Compilation Failed');
             else toast.success('Compilation Successful');
@@ -278,7 +247,7 @@ const EditorPage = () => {
                 </div>
 
             </div>
-        
+
         </div>
     );
 };
