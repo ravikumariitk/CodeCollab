@@ -8,8 +8,8 @@ function Camera({ socketId, clients }) {
   const currentUserVideoRef = useRef(null);
   const peerInstance = useRef(null);
   const localStream = useRef(null); // Store the local media stream
-  const videoEnabled = useRef(false); // Avoid triggering re-renders
-  const audioEnabled = useRef(false);
+  const [videoEnabled, setVideoEnabled] = useState(true);  // React state for video enable
+  const [audioEnabled, setAudioEnabled] = useState(true);  // React state for audio enable
 
   // useEffect to initialize PeerJS and get user media
   useEffect(() => {
@@ -109,25 +109,29 @@ function Camera({ socketId, clients }) {
   );
 
   const handleAudio = () => {
-    if (!localStream.current) return;
-
-    const audioTrack = localStream.current.getAudioTracks()[0];
-    if (audioTrack) {
-      audioTrack.enabled = !audioTrack.enabled;
-      audioEnabled.current = audioTrack.enabled;
-      toast.success(audioTrack.enabled ? 'You are now unmuted' : 'You are now muted');
-    }
+    setAudioEnabled((prevAudioState) => {
+      if (localStream.current) {
+        const audioTrack = localStream.current.getAudioTracks()[0];
+        if (audioTrack) {
+          audioTrack.enabled = !audioTrack.enabled;
+          toast.success(audioTrack.enabled ? 'You are now unmuted' : 'You are now muted');
+        }
+      }
+      return !prevAudioState;
+    });
   };
 
   const handleVideo = () => {
-    if (!localStream.current) return;
-
-    const videoTrack = localStream.current.getVideoTracks()[0];
-    if (videoTrack) {
-      videoTrack.enabled = !videoTrack.enabled;
-      videoEnabled.current = videoTrack.enabled;
-      toast.success(videoTrack.enabled ? 'You are now visible' : 'You are now hidden');
-    }
+    setVideoEnabled((prevVideoState) => {
+      if (localStream.current) {
+        const videoTrack = localStream.current.getVideoTracks()[0];
+        if (videoTrack) {
+          videoTrack.enabled = !videoTrack.enabled;
+          toast.success(videoTrack.enabled ? 'You are now visible' : 'You are now hidden');
+        }
+      }
+      return !prevVideoState;
+    });
   };
 
   return (
@@ -135,11 +139,11 @@ function Camera({ socketId, clients }) {
       <div className="container">
         <video className="video" ref={currentUserVideoRef} />
         <button onClick={handleAudio}>
-          {audioEnabled.current ? 'Mute' : 'Unmute'}
+          {audioEnabled ? 'Mute' : 'Unmute'}
         </button>
         &nbsp;
         <button onClick={handleVideo}>
-          {videoEnabled.current ? 'Hide' : 'Show'}
+          {videoEnabled ? 'Hide' : 'Show'}
         </button>
       </div>
       <div className="Container">
