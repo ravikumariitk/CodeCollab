@@ -13,6 +13,7 @@ import {
     Navigate,
     useParams,
 } from 'react-router-dom';
+import { use } from 'react';
 
 const EditorPage = () => {
     const [run, setRun] = useState("Run Code");
@@ -24,6 +25,9 @@ const EditorPage = () => {
     const [isRunning, setIsRunning] = useState(false)
     const [socketId , setSocketId] = useState("")
     const [peerId , setPeerId] = useState('')
+    const[isDownloaded , setIsDownloaded] = useState(false)
+    const[isDownloading , setIsDownloading] = useState(false)
+
 
     const socketRef = useRef(null);
     const codeRef = useRef(null);
@@ -126,7 +130,24 @@ const EditorPage = () => {
     if (!location.state) {
         return <Navigate to="/" />;
     }
-
+      function downloadCode(){
+        setIsDownloading(true);
+        setTimeout(() => {
+            function getExtension(lang){
+                if(lang == 'javascript') return "js";
+                if(lang == 'python') return "py";
+                if(lang == 'cpp') return "cpp";
+            }
+            const blob = new Blob([code], { type: 'text/plain' }); // text/plain for C++ code
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `program.${getExtension(language)}`; // You can change the file name here
+            link.click();
+            setIsDownloading(false);
+            setIsDownloaded(true)
+        }, 1000);
+       
+    }
     return (
         <div className="mainWrap">
             <div className="aside">
@@ -192,6 +213,13 @@ const EditorPage = () => {
                                 className="runButton"
                                 onClick={runCode}>
                                 {isRunning ? "Running..." : "Run Code"}
+                            </button>
+                            &nbsp;
+                            <button
+                                disabled={isRunning}
+                                className="runButton"
+                                onClick={downloadCode}>
+                                {isDownloaded ? "Download Again" : (isDownloading? "Downloading...":"Download Code")}
                             </button>
                         </span>
                     </div>
