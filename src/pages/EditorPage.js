@@ -4,8 +4,9 @@ import ACTIONS from '../Actions';
 import Client from '../components/Client';
 import Editor from '../components/Editor';
 import { initSocket } from '../socket';
+import Peer from 'peerjs'
 import axios from 'axios';
-
+import Camera from '../components/Camera';
 import {
     useLocation,
     useNavigate,
@@ -21,6 +22,8 @@ const EditorPage = () => {
     const [language, setLanguage] = useState("cpp")
     const [theme, setTheme] = useState("")
     const [isRunning, setIsRunning] = useState(false)
+    const [socketId , setSocketId] = useState("")
+    const [peerId , setPeerId] = useState('')
 
     const socketRef = useRef(null);
     const codeRef = useRef(null);
@@ -34,13 +37,12 @@ const EditorPage = () => {
             socketRef.current = await initSocket();
             socketRef.current.on('connect_error', (err) => handleErrors(err));
             socketRef.current.on('connect_failed', (err) => handleErrors(err));
-
+            // console.log("Socket Id", socketRef.current.id)
             function handleErrors(e) {
                 console.log('socket error', e);
                 toast.error('Connection failed, try again later.');
                 reactNavigator('/');
             }
-
             socketRef.current.emit(ACTIONS.JOIN, {
                 roomId,
                 username: location.state?.username,
@@ -53,6 +55,9 @@ const EditorPage = () => {
                     if (username !== location.state?.username) {
                         toast.success(`${username} joined the room.`);
                         console.log(`${username} joined`);
+                    }else{
+                        console.log("Socket ID :",socketId)
+                        setSocketId(socketId);
                     }
                     setClients(clients);
                     socketRef.current.emit(ACTIONS.SYNC_CODE, {
@@ -61,7 +66,6 @@ const EditorPage = () => {
                     });
                 }
             );
-
             // Listening for disconnected
             socketRef.current.on(
                 ACTIONS.DISCONNECTED,
@@ -76,6 +80,7 @@ const EditorPage = () => {
             );
         };
         init();
+
         return () => {
             socketRef.current.disconnect();
             socketRef.current.off(ACTIONS.JOINED);
@@ -94,7 +99,6 @@ const EditorPage = () => {
     }
 
     const runCode = async () => {
-
         try {
             setIsRunning(true)
             toast.success('Code Submitted');
@@ -143,10 +147,10 @@ const EditorPage = () => {
                             />
                         ))}
                     </div> */}
-                   
-                   
+
+                <><Camera socketId = {socketId} clients = {clients}></Camera></>
                 </div>
-                
+
                 <button className="btn leaveBtn" onClick={copyRoomId}>
                     Copy ROOM ID
                 </button>
@@ -165,54 +169,54 @@ const EditorPage = () => {
                     theme
                     language
                 />
-               <div className="codeTerminal">
-  <div className="terminalHeader">
-    <span>
-      Language: 
-      <select value={language} onChange={(e) => setLanguage(e.target.value)}>
-        <option value="cpp">C++</option>
-        <option value="javascript">JavaScript</option>
-        <option value="python">Python</option>
-      </select>
-    </span>
-    {/* <span>
+                <div className="codeTerminal">
+                    <div className="terminalHeader">
+                        <span>
+                            Language:
+                            <select value={language} onChange={(e) => setLanguage(e.target.value)}>
+                                <option value="cpp">C++</option>
+                                <option value="javascript">JavaScript</option>
+                                <option value="python">Python</option>
+                            </select>
+                        </span>
+                        {/* <span>
       Theme: 
       <select value={theme} onChange={(e) => setTheme(e.target.value)}>
         <option value="dracula">Dracula</option>
         <option value="material">Material</option>
       </select>
     </span> */}
-    <span>
-      <button 
-        disabled={isRunning} 
-        className="runButton" 
-        onClick={runCode}>
-        {isRunning ? "Running..." : "Run Code"}
-      </button>
-    </span>
-  </div>
+                        <span>
+                            <button
+                                disabled={isRunning}
+                                className="runButton"
+                                onClick={runCode}>
+                                {isRunning ? "Running..." : "Run Code"}
+                            </button>
+                        </span>
+                    </div>
 
-  <div className="terminalBody">
-    <div className="inputSection">
-      <label>Input:</label>
-      <textarea 
-        rows="4" 
-        placeholder="Enter input here..." 
-        onChange={(e) => setInput(e.target.value)}
-      ></textarea>
-    </div>
+                    <div className="terminalBody">
+                        <div className="inputSection">
+                            <label>Input:</label>
+                            <textarea
+                                rows="4"
+                                placeholder="Enter input here..."
+                                onChange={(e) => setInput(e.target.value)}
+                            ></textarea>
+                        </div>
 
-    <div className="outputSection">
-      <label>Output:</label>
-      <textarea 
-        rows="6" 
-        readOnly 
-        value={output} 
-        placeholder="Output will be displayed here..."
-      ></textarea>
-    </div>
-  </div>
-</div>
+                        <div className="outputSection">
+                            <label>Output:</label>
+                            <textarea
+                                rows="6"
+                                readOnly
+                                value={output}
+                                placeholder="Output will be displayed here..."
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
 
             </div>
 
