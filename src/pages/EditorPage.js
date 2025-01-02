@@ -54,13 +54,13 @@ const EditorPage = () => {
                 roomId,
                 username: location.state?.username,
             });
-
-           
+            
             socketRef.current.on(
                 ACTIONS.INITIAL_DOCUMENT,({initialUpdate})=>{
                 console.log("Initial Update", initialUpdate)
                 if (initialUpdate && initialUpdate.length > 0) {
-                    Y.applyUpdate(ydoc.current, initialUpdate);
+                    const update = Y.encodeStateAsUpdate(ydoc.current); // Encode state as an update
+                                    Y.applyUpdate(ydoc.current, update); 
                 } else {
                     console.error('Received invalid or empty initial document update');
                 }
