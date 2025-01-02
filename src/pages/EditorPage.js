@@ -7,6 +7,9 @@ import { initSocket } from '../socket';
 import Peer from 'peerjs'
 import axios from 'axios';
 import Camera from '../components/Camera';
+import * as Y from 'yjs';
+import { WebrtcProvider } from 'y-webrtc';
+
 import {
     useLocation,
     useNavigate,
@@ -28,7 +31,7 @@ const EditorPage = () => {
     const[isDownloaded , setIsDownloaded] = useState(false)
     const[isDownloading , setIsDownloading] = useState(false)
 
-
+    const ydoc = useRef(new Y.Doc());
     const socketRef = useRef(null);
     const codeRef = useRef(null);
     const location = useLocation();
@@ -52,7 +55,19 @@ const EditorPage = () => {
                 username: location.state?.username,
             });
 
-            // Listening for joined event
+           
+            socketRef.current.on(
+                ACTIONS.INITIAL_DOCUMENT,({initialUpdate})=>{
+                console.log("Initial Update", initialUpdate)
+                if (initialUpdate && initialUpdate.length > 0) {
+                    Y.applyUpdate(ydoc.current, initialUpdate);
+                } else {
+                    console.error('Received invalid or empty initial document update');
+                }
+                console.log("Initial state updated!")
+                }
+            )
+
             socketRef.current.on(
                 ACTIONS.JOINED,
                 ({ clients, username, socketId }) => {
@@ -190,6 +205,7 @@ const EditorPage = () => {
                     setCode={setCode}
                     theme
                     language
+                    ydoc = {ydoc}
                 />
                 <div className="codeTerminal">
                     <div className="terminalHeader">

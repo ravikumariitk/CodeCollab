@@ -5,6 +5,10 @@ const path = require('path');
 const { Server } = require('socket.io');
 const ACTIONS = require('./src/Actions');
 const { PeerServer } = require('peer');
+const Y = require("yjs");
+const { encodeStateAsUpdate, applyUpdate } = Y;
+const ydoc = new Y.Doc();
+
 
 const server = http.createServer(app);
 const io = new Server(server);
@@ -33,6 +37,8 @@ io.on('connection', (socket) => {
     socket.on(ACTIONS.JOIN, ({ roomId, username }) => {
         userSocketMap[socket.id] = username;
         socket.join(roomId);
+        const initialUpdate = Y.encodeStateAsUpdate(ydoc);
+        io.to(socket.id).emit(ACTIONS.INITIAL_DOCUMENT, initialUpdate);
         const clients = getAllConnectedClients(roomId);
         clients.forEach(({ socketId }) => {
             io.to(socketId).emit(ACTIONS.JOINED, {
@@ -44,6 +50,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on(ACTIONS.CODE_CHANGE, ({ roomId, code }) => {
+        Y.applyUpdate(ydoc, code);
         socket.in(roomId).emit(ACTIONS.CODE_CHANGE, { code });
     });
 
@@ -76,5 +83,5 @@ io.on('connection', (socket) => {
 app.get('/',(req,res)=>{
     res.sendFile(__dirname + '/index.html');
 })
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));

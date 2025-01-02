@@ -6,9 +6,10 @@ import 'codemirror/mode/javascript/javascript';
 import 'codemirror/addon/edit/closetag';
 import 'codemirror/addon/edit/closebrackets';
 import ACTIONS from '../Actions';
+import * as Y from 'yjs';
 
 
-const Editor = ({ socketRef, roomId, onCodeChange , setCode, theme, language}) => {
+const Editor = ({ socketRef, roomId, onCodeChange , setCode, theme, language, ydoc}) => {
 
     const editorRef = useRef(null);
     useEffect(() => {
@@ -45,6 +46,8 @@ const Editor = ({ socketRef, roomId, onCodeChange , setCode, theme, language}) =
             socketRef.current.on(ACTIONS.CODE_CHANGE, ({ code }) => {
                 if (code !== null) {
                     editorRef.current.setValue(code);
+                    Y.applyUpdate(ydoc.current, code);
+                    console.log("Updated document")
                 }
             });
         }

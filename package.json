@@ -21,7 +21,9 @@
     "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.1",
     "uuid": "^8.3.2",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "y-webrtc": "^10.3.0",
+    "yjs": "^13.6.21"
   },
   "scripts": {
     "start:front": "react-scripts start",
