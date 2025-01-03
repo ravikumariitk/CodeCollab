@@ -27,6 +27,7 @@
 - **Peer-to-Peer Communication**: PeerJS
 - **Notifications**: react-hot-toast
 - **Media Streaming**: WebRTC APIs (`getUserMedia`)
+- **Collaboration**: Conflict-free replicated data types ( [Yjs](https://github.com/yjs/yjs) )
 - **Styling**: CSS
 
 ---
