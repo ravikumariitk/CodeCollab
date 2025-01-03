@@ -59,7 +59,7 @@ const Home = () => {
                         value={username}
                         onKeyUp={handleInputEnter}
                     />
-                    <button className="btn joinBtn" onClick={joinRoom}>
+                    <button className="btn homebtn" onClick={joinRoom}>
                         Join
                     </button>
                     <span className="createInfo">

@@ -66,6 +66,18 @@ footer a {
     color: white;
     margin-left: auto;
 }
+.homebtn{
+  background: #4aed88;
+    width: 100%;
+    /* color: white; */
+    margin-left: auto;
+}
+.homebtn:hover{
+  background: #269550;
+    width: 100%;
+    /* color: white; */
+    margin-left: auto;
+}
 
 .joinBtn:hover,
 .leaveBtn:hover {
