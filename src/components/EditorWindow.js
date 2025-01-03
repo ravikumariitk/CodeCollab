@@ -10,13 +10,14 @@ import randomColor from 'randomcolor';
 
 const serverWsUrl = process.env.REACT_APP_BACKEND_URL;
 
-export default function EditorWindow({socketRef , roomId , username , code, setCode}) {
+export default function EditorWindow({socketRef , roomId , username , code, setCode , language}) {
   const theme = useTheme();
 
   const editorRef = useRef();
 
   function handleEditorDidMount(editor) {
     editorRef.current = editor;
+    editor.focus()
 
     // Initialize yjs
     const doc = new Y.Doc(); // collection of shared objects
@@ -80,12 +81,13 @@ export default function EditorWindow({socketRef , roomId , username , code, setC
     const binding = new MonacoBinding(type, editorRef.current.getModel(), new Set([editorRef.current]), provider.awareness);
   }
 
+  console.log("lang",language)
   return (
     <>
       <Editor
         height="60vh"
-        language={"cpp"}
-        defaultValue={"// your code here"}
+        language={language}
+        defaultValue={""}
         theme={"vs-dark"}
         onMount={handleEditorDidMount}
       />

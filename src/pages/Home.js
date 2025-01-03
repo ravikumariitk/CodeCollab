@@ -35,6 +35,7 @@ const Home = () => {
     };
     return (
         <div className="homePageWrapper">
+            <img src="https://i.postimg.cc/YC13sX2Z/Astronaut-cuate.png" alt="" />
             <div className="formWrapper">
                 <img
                     className="homePageLogo"

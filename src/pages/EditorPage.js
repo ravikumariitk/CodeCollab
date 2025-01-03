@@ -181,7 +181,7 @@ const EditorPage = () => {
                 </button>
             </div>
             <div className="editorWrap">
-              <Editor socketRef = {socketRef} roomId = {roomId} username = {location.state?.username} code = {code} setCode = {setCode}></Editor>
+              <Editor socketRef = {socketRef} roomId = {roomId} username = {location.state?.username} code = {code} setCode = {setCode} language= {language}></Editor>
                 <div className="codeTerminal">
                     <div className="terminalHeader">
                         <span>
