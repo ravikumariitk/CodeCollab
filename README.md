@@ -1,6 +1,6 @@
 # CodeCollab 🎥💬
 
-**CodeTogether** is a real-time multi-user code editor with integrated video and audio call capabilities. It enables seamless collaboration, allowing multiple participants to code together in a shared environment while communicating via high-quality video and audio calls.
+**CodeCollab** is a real-time multi-user code editor with integrated video and audio call capabilities. It enables seamless collaboration, allowing multiple participants to code together in a shared environment while communicating via high-quality video and audio calls.
 
 ## Features 🚀
 
