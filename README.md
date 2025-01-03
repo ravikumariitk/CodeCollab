@@ -17,7 +17,7 @@
 
 ## Demo ✈️
 
-[https://app-code-collab.onrender.com ](https://app-codecollab.onrender.com/)
+app-codecollab.onrender.com/ 
 ---
 
 ## Technologies Used 🛠️
