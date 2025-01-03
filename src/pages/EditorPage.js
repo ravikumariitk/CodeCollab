@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import ACTIONS from '../Actions';
 import Client from '../components/Client';
-import Editor from '../components/Editor';
+import Editor from '../components/EditorWindow';
 import { initSocket } from '../socket';
 import Peer from 'peerjs'
 import axios from 'axios';
@@ -50,23 +50,11 @@ const EditorPage = () => {
                 toast.error('Connection failed, try again later.');
                 reactNavigator('/');
             }
+
             socketRef.current.emit(ACTIONS.JOIN, {
                 roomId,
                 username: location.state?.username,
             });
-            
-            socketRef.current.on(
-                ACTIONS.INITIAL_DOCUMENT,({initialUpdate})=>{
-                console.log("Initial Update", initialUpdate)
-                if (initialUpdate && initialUpdate.length > 0) {
-                    const update = Y.encodeStateAsUpdate(ydoc.current); // Encode state as an update
-                                    Y.applyUpdate(ydoc.current, update); 
-                } else {
-                    console.error('Received invalid or empty initial document update');
-                }
-                console.log("Initial state updated!")
-                }
-            )
 
             socketRef.current.on(
                 ACTIONS.JOINED,
@@ -79,13 +67,8 @@ const EditorPage = () => {
                         setSocketId(socketId);
                     }
                     setClients(clients);
-                    socketRef.current.emit(ACTIONS.SYNC_CODE, {
-                        code: codeRef.current,
-                        socketId,
-                    });
                 }
             );
-            // Listening for disconnected
             socketRef.current.on(
                 ACTIONS.DISCONNECTED,
                 ({ socketId, username }) => {
@@ -120,6 +103,7 @@ const EditorPage = () => {
     const runCode = async () => {
         try {
             setIsRunning(true)
+            console.log(code)
             toast.success('Code Submitted');
             const response = await axios.post('https://emkc.org/api/v2/piston/execute', {
                 language, // Language like 'python', 'javascript', 'cpp'
@@ -136,6 +120,7 @@ const EditorPage = () => {
             setOutput(run.stdout || run.stderr || 'No output');
         } catch (error) {
             setOutput('Error: Unable to execute the code');
+            setIsRunning(false)
         }
     };
     function leaveRoom() {
@@ -188,7 +173,7 @@ const EditorPage = () => {
                 <><Camera socketId = {socketId} clients = {clients}></Camera></>
                 </div>
 
-                <button className="btn leaveBtn" onClick={copyRoomId}>
+                <button className="btn runButton" onClick={copyRoomId}>
                     Copy ROOM ID
                 </button>
                 <button className="btn leaveBtn" onClick={leaveRoom}>
@@ -196,17 +181,7 @@ const EditorPage = () => {
                 </button>
             </div>
             <div className="editorWrap">
-                <Editor
-                    socketRef={socketRef}
-                    roomId={roomId}
-                    onCodeChange={(code) => {
-                        codeRef.current = code;
-                    }}
-                    setCode={setCode}
-                    theme
-                    language
-                    ydoc = {ydoc}
-                />
+              <Editor socketRef = {socketRef} roomId = {roomId} username = {location.state?.username} code = {code} setCode = {setCode}></Editor>
                 <div className="codeTerminal">
                     <div className="terminalHeader">
                         <span>

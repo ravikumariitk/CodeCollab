@@ -61,14 +61,15 @@ footer a {
 
 .joinBtn,
 .leaveBtn {
-    background: #4aed88;
+    background: #ac1313;
     width: 100px;
+    color: white;
     margin-left: auto;
 }
 
 .joinBtn:hover,
 .leaveBtn:hover {
-    background: #2b824c;
+    background: #822b2b;
 }
 
 .createInfo {
@@ -143,7 +144,7 @@ footer a:hover {
 }
 
 .codeTerminal {
-    background-color: #1e1e2f;
+    background-color: #1c1e29;
     color: #ffffff;
     padding: 10px;
     border-radius: 5px;
@@ -194,15 +195,15 @@ footer a:hover {
   .inputSection, .outputSection {
     display: flex;
     flex-direction: column;
-    background: #2b2b3c;
-    padding: 10px;
-    border-radius: 5px;
+    background:  #1c1e29;
+    /* padding: 10px;
+    border-radius: 5px; */
   }
   
   textarea {
     width: 98%;
     background: #000;
-    color: #0f0;
+    color: white;
     border: none;
     padding: 10px;
     font-family: 'Courier New', Courier, monospace;
