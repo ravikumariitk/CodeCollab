@@ -6,7 +6,7 @@ import { WebsocketProvider } from 'y-websocket';
 import { MonacoBinding } from 'y-monaco';
 import { WebrtcProvider } from 'y-webrtc'
 import { editor } from "monaco-editor";
-import randomColor from 'randomcolor';
+// import randomColor from 'randomcolor';
 
 const serverWsUrl = process.env.REACT_APP_BACKEND_URL;
 
@@ -70,7 +70,12 @@ export default function EditorWindow({socketRef , roomId , username , code, setC
         }
       });
     });
-
+function randomColor(){
+  let idx = Math.floor(Math.random() * 5);
+  console.log(idx);
+  const colors = ['#822b2b' , "#269550" , '#132f91' , "#d5d813" , '#d01616']
+  return colors[idx]; 
+}
     // You can think of your own awareness information as a key-value store.
     // We update our "user" field to propagate relevant user information.
     awareness.setLocalStateField('user', {
