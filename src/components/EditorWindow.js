@@ -25,7 +25,7 @@ export default function EditorWindow({socketRef , roomId , username , code, setC
     // Connect to peers with WebSocket
     console.log("Signal url", process.env.REACT_APP_SIGNAL_URL)
     const provider = new WebrtcProvider('monaco', doc, {
-      signaling: ['http://localhost:1234/'], // Replace with your custom WebSocket server URL
+      signaling: ['wss://codecollabsignalserver.onrender.com/'], // Replace with your custom WebSocket server URL
       password: null,
     });
     
