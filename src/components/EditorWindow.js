@@ -24,12 +24,12 @@ export default function EditorWindow({socketRef , roomId , username , code, setC
 
     // Connect to peers with WebSocket
     console.log("Signal url", process.env.REACT_APP_SIGNAL_URL)
-    const provider = new WebrtcProvider('monaco', doc, {
+    const provider = new WebrtcProvider(roomId, doc, {
       signaling: ['wss://codecollabsignalserver.onrender.com/'], // Replace with your custom WebSocket server URL
       password: null,
     });
     
-    const type = doc.getText("monaco");
+    const type = doc.getText(roomId);
     // All of our network providers implement the awareness crdt
     const awareness = provider.awareness
 
