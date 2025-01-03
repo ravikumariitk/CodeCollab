@@ -22,7 +22,11 @@ export default function EditorWindow({socketRef , roomId , username , code, setC
     const doc = new Y.Doc(); // collection of shared objects
 
     // Connect to peers with WebSocket
-    const provider = new WebrtcProvider('monaco', doc)
+    const provider = new WebrtcProvider('monaco', doc, {
+      signaling: [process.env.SIGNAL_URL], // Replace with your custom WebSocket server URL
+      password: null,
+    });
+    
     const type = doc.getText("monaco");
     // All of our network providers implement the awareness crdt
     const awareness = provider.awareness
