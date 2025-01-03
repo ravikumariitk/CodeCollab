@@ -22,6 +22,7 @@ export default function EditorWindow({socketRef , roomId , username , code, setC
     const doc = new Y.Doc(); // collection of shared objects
 
     // Connect to peers with WebSocket
+    console.log("Signal url", process.env.SIGNAL_URL)
     const provider = new WebrtcProvider('monaco', doc, {
       signaling: [process.env.SIGNAL_URL], // Replace with your custom WebSocket server URL
       password: null,
