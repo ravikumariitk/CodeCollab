@@ -1,6 +1,6 @@
 # CodeCollab 🎥💬
 
-**CodeTogether** is a real-time multi-user code editor with integrated video and audio call capabilities. It enables seamless collaboration, allowing multiple participants to code together in a shared environment while communicating via high-quality video and audio calls.
+**CodeCollab** is a real-time multi-user code editor with integrated video and audio call capabilities. It enables seamless collaboration, allowing multiple participants to code together in a shared environment while communicating via high-quality video and audio calls.
 
 ## Features 🚀
 
@@ -17,7 +17,7 @@
 
 ## Demo ✈️
 
-https://app-code-collab.onrender.com 
+[app-codecollab.onrender.com/ ](https://app-codecollab.onrender.com/)
 ---
 
 ## Technologies Used 🛠️
@@ -27,6 +27,7 @@ https://app-code-collab.onrender.com
 - **Peer-to-Peer Communication**: PeerJS
 - **Notifications**: react-hot-toast
 - **Media Streaming**: WebRTC APIs (`getUserMedia`)
+- **Collaboration**: Conflict-free replicated data types ( [Yjs](https://github.com/yjs/yjs) )
 - **Styling**: CSS
 
 ---
