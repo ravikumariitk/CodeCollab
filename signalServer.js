@@ -1,9 +1,19 @@
 const WebSocket = require('ws');
-const wss = new WebSocket.Server({ port: process.env.PORT | 1234 });
+const http = require('http');
 
+// Create an HTTP server for health checks
+const server = http.createServer((req, res) => {
+  res.writeHead(200);
+  res.end('OK');
+});
+
+// Combine WebSocket with HTTP server
+const wss = new WebSocket.Server({ server });
 const clients = new Map();
 
 wss.on('connection', (ws) => {
+  console.log('Client connected');
+  
   ws.on('message', (message) => {
     console.log(`Received message => ${message}`);
     const parsedMessage = JSON.parse(message);
@@ -21,12 +31,26 @@ wss.on('connection', (ws) => {
   });
 
   ws.on('close', () => {
+    console.log('Client disconnected');
     clients.forEach((clientWs, peerId) => {
       if (clientWs === ws) {
         clients.delete(peerId);
+        console.log(`Unregistered peer: ${peerId}`);
       }
     });
   });
+
+  ws.on('error', (err) => {
+    console.error('WebSocket client error:', err);
+  });
 });
 
-console.log(`Signaling server is running on ws://localhost:${process.env.PORT }`);
+wss.on('error', (err) => {
+  console.error('WebSocket server error:', err);
+});
+
+// Start the server
+const port = process.env.PORT || 1234;
+server.listen(port, () => {
+  console.log(`Signaling server is running on port ${port}`);
+});
