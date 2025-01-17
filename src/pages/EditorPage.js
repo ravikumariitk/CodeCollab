@@ -9,7 +9,7 @@ import axios from 'axios';
 import Camera from '../components/Camera';
 import * as Y from 'yjs';
 import { WebrtcProvider } from 'y-webrtc';
-
+import WhiteBoard from '../components/WhiteBoard';
 import {
     useLocation,
     useNavigate,
@@ -30,7 +30,7 @@ const EditorPage = () => {
     const [peerId , setPeerId] = useState('')
     const[isDownloaded , setIsDownloaded] = useState(false)
     const[isDownloading , setIsDownloading] = useState(false)
-
+    const [canvas, setCanvas] = useState("none");
     const ydoc = useRef(new Y.Doc());
     const socketRef = useRef(null);
     const codeRef = useRef(null);
@@ -149,7 +149,9 @@ const EditorPage = () => {
        
     }
     return (
+        
         <div className="mainWrap">
+            
             <div className="aside">
                 <div className="asideInner">
                     <div className="logo">
@@ -172,7 +174,12 @@ const EditorPage = () => {
 
                 <><Camera socketId = {socketId} clients = {clients}></Camera></>
                 </div>
-
+                <button className="btn runButton" onClick={()=>{
+                    console.log("Opening Canvas")
+                    if(canvas === 'none') setCanvas('block')
+                        else setCanvas('none')
+                }}>{canvas === 'none'? "Open Canvas": "Close Canvas"}</button>
+                <br />
                 <button className="btn runButton" onClick={copyRoomId}>
                     Copy ROOM ID
                 </button>
@@ -180,6 +187,7 @@ const EditorPage = () => {
                     Leave
                 </button>
             </div>
+            <WhiteBoard canvas = {canvas} setCanvas = {setCanvas} roomId={roomId}></WhiteBoard>
             <div className="editorWrap">
               <Editor socketRef = {socketRef} roomId = {roomId} username = {location.state?.username} code = {code} setCode = {setCode} language= {language}></Editor>
                 <div className="codeTerminal">

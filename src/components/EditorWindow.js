@@ -92,7 +92,7 @@ function randomColor(){
       <Editor
         height="60vh"
         language={language}
-        defaultValue={""}
+        defaultValue={"//cook your dish here "}
         theme={"vs-dark"}
         onMount={handleEditorDidMount}
       />
