@@ -10,6 +10,7 @@ import Camera from '../components/Camera';
 import * as Y from 'yjs';
 import { WebrtcProvider } from 'y-webrtc';
 import WhiteBoard from '../components/WhiteBoard';
+import AiAgent from '../components/aiAgent';
 import {
     useLocation,
     useNavigate,
@@ -31,6 +32,8 @@ const EditorPage = () => {
     const[isDownloaded , setIsDownloaded] = useState(false)
     const[isDownloading , setIsDownloading] = useState(false)
     const [canvas, setCanvas] = useState("none");
+    const [ai, setAi] = useState("none");
+
     const ydoc = useRef(new Y.Doc());
     const socketRef = useRef(null);
     const codeRef = useRef(null);
@@ -175,9 +178,28 @@ const EditorPage = () => {
                 <><Camera socketId = {socketId} clients = {clients}></Camera></>
                 </div>
                 <button className="btn runButton" onClick={()=>{
+                    if(ai === 'none') {
+                        setAi('block')
+                        toast.success('AI Assistant Opened');
+                    }
+                    else {
+                        setAi('none')
+                        toast.success('AI Assistant Closed');
+                    }
+                }}>
+                {ai === 'none'? "Open AI Assistant": "Close AI Assistant"}
+                </button>
+                <br />
+                <button className="btn runButton" onClick={()=>{
                     console.log("Opening Canvas")
-                    if(canvas === 'none') setCanvas('block')
-                        else setCanvas('none')
+                    if(canvas === 'none') {
+                        setCanvas('block')
+                        toast.success('Canvas Opened');
+                    }
+                    else {
+                        setCanvas('none')
+                        toast.success('Canvas Closed');
+                    }
                 }}>{canvas === 'none'? "Open Canvas": "Close Canvas"}</button>
                 <br />
                 <button className="btn runButton" onClick={copyRoomId}>
@@ -187,8 +209,11 @@ const EditorPage = () => {
                     Leave
                 </button>
             </div>
+            <div style={{display:ai}}>
+            <AiAgent code = {code} language = {language}></AiAgent>
+            </div>
             <WhiteBoard canvas = {canvas} setCanvas = {setCanvas} roomId={roomId}></WhiteBoard>
-            <div className="editorWrap">
+            <div className="editorWrap" style={{ display :  ai=='none'?'block':'none'}}>
               <Editor socketRef = {socketRef} roomId = {roomId} username = {location.state?.username} code = {code} setCode = {setCode} language= {language}></Editor>
                 <div className="codeTerminal">
                     <div className="terminalHeader">

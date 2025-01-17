@@ -104,6 +104,8 @@ footer a:hover {
 }
 
 .mainWrap {
+    height: 100vh;
+    text-overflow: clip;
     display: grid;
     grid-template-columns: 230px 1fr;
 }
