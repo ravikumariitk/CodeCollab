@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
-import axios from 'axios'
+import axios from 'axios';
 
-function AiAgent({ code , language, useCode}) {
+function AiAgent({ code, language, useCode }) {
     const [messages, setMessages] = useState([
         { sender: 'ai', text: 'Hello! How can I assist you today?' },
     ]);
     const [userInput, setUserInput] = useState('');
+    const [isThinking, setIsThinking] = useState(false); // State to track thinking status
 
     const handleSendMessage = async () => {
         if (userInput.trim() === '') return;
@@ -15,50 +16,58 @@ function AiAgent({ code , language, useCode}) {
         setMessages(newMessages);
         setUserInput('');
 
+        setIsThinking(true); // Set thinking status to true
+
         const aiResponse = await getAIResponse(userInput);
         setMessages([...newMessages, { sender: 'ai', text: aiResponse }]);
+
+        setIsThinking(false); // Set thinking status to false after response
     };
 
     async function getAIResponse(message) {
-        if(useCode) {
-            message = `Based on the following code : ${code} answere the question : ${message} in ${language} language, and if the question is not realated to the code dont consider the code as in input promt.`
+        if (useCode) {
+            message = `Based on the following code : ${code} answer the question : ${message} in ${language} language, and if the question is not related to the code don't consider the code as input prompt.`;
         }
         try {
             const apiRequestBody = {
-                "contents": [
-                  {
-                    "role": "user",
-                    "parts": [
-                      {
-                        "text": ` ${message} `
-                      }
-                    ]
-                  }
+                contents: [
+                    {
+                        role: 'user',
+                        parts: [
+                            {
+                                text: ` ${message} `,
+                            },
+                        ],
+                    },
                 ],
-                "generationConfig": {
-                  "temperature": 1,
-                  "topK": 40,
-                  "topP": 0.95,
-                  "maxOutputTokens": 8192,
-                  "responseMimeType": "text/plain"
-                }
+                generationConfig: {
+                    temperature: 1,
+                    topK: 40,
+                    topP: 0.95,
+                    maxOutputTokens: 8192,
+                    responseMimeType: 'text/plain',
+                },
             };
 
-            const response = await axios.post('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyCl28D4MIbcC-KnnEakRg7linO6K5OzMiE', apiRequestBody, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+            const response = await axios.post(
+                'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyCl28D4MIbcC-KnnEakRg7linO6K5OzMiE',
+                apiRequestBody,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
 
             const aiMessage = response.data.candidates[0].content.parts[0].text;
-            
+
             // Here, we can format the text for a prettier output.
-            const formattedText = aiMessage.replace(/(?:\*\*([^*]+)\*\*)/g, "<b>$1</b>")  // Convert **bold** to <b> tags
-                                          .replace(/(?:\*([^*]+)\*)/g, "<i>$1</i>")  // Convert *italic* to <i> tags
-                                          .replace(/\n/g, "<br>"); // Line breaks for better readability
+            const formattedText = aiMessage
+                .replace(/(?:\*\*([^*]+)\*\*)/g, '<b>$1</b>') // Convert **bold** to <b> tags
+                .replace(/(?:\*([^*]+)\*)/g, '<i>$1</i>') // Convert *italic* to <i> tags
+                .replace(/\n/g, '<br>'); // Line breaks for better readability
 
             return formattedText;
-
         } catch (error) {
             console.error('Error fetching AI response:', error);
             toast.error('Error fetching AI response');
@@ -81,7 +90,15 @@ function AiAgent({ code , language, useCode}) {
                         dangerouslySetInnerHTML={{ __html: msg.text }} // Render formatted HTML content
                     />
                 ))}
+
+                {/* Show thinking message while AI is processing */}
+                {isThinking && (
+                    <div style={styles.message}>
+                        <span style={{ color: '#fff' }}>AI is thinking...</span>
+                    </div>
+                )}
             </div>
+
             <div style={styles.inputBox}>
                 <input
                     type="text"
