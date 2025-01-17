@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import axios from 'axios'
 
-function AiAgent({ code , language}) {
+function AiAgent({ code , language, useCode}) {
     const [messages, setMessages] = useState([
         { sender: 'ai', text: 'Hello! How can I assist you today?' },
     ]);
@@ -20,6 +20,9 @@ function AiAgent({ code , language}) {
     };
 
     async function getAIResponse(message) {
+        if(useCode) {
+            message = `Based on the following code : ${code} answere the question : ${message} in ${language} language, and if the question is not realated to the code dont consider the code as in input promt.`
+        }
         try {
             const apiRequestBody = {
                 "contents": [

@@ -163,7 +163,7 @@ footer a:hover {
     color: #ffffff;
     padding: 10px;
     border-radius: 5px;
-    font-family: 'Courier New', Courier, monospace;
+    /* font-family: 'Courier New', Courier, monospace; */
   }
   
   .terminalHeader {

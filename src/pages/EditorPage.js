@@ -33,6 +33,8 @@ const EditorPage = () => {
     const[isDownloading , setIsDownloading] = useState(false)
     const [canvas, setCanvas] = useState("none");
     const [ai, setAi] = useState("none");
+    const [useCode, setUseCode] = useState(false);
+
 
     const ydoc = useRef(new Y.Doc());
     const socketRef = useRef(null);
@@ -210,7 +212,7 @@ const EditorPage = () => {
                 </button>
             </div>
             <div style={{display:ai}}>
-            <AiAgent code = {code} language = {language}></AiAgent>
+            <AiAgent code = {code} language = {language} useCode = {useCode}></AiAgent>
             </div>
             <WhiteBoard canvas = {canvas} setCanvas = {setCanvas} roomId={roomId}></WhiteBoard>
             <div className="editorWrap" style={{ display :  ai=='none'?'block':'none'}}>
@@ -218,20 +220,20 @@ const EditorPage = () => {
                 <div className="codeTerminal">
                     <div className="terminalHeader">
                         <span>
-                            Language:
+                            Language:&nbsp;
                             <select value={language} onChange={(e) => setLanguage(e.target.value)}>
                                 <option value="cpp">C++</option>
                                 <option value="javascript">JavaScript</option>
                                 <option value="python">Python</option>
                             </select>
                         </span>
-                        {/* <span>
-      Theme: 
-      <select value={theme} onChange={(e) => setTheme(e.target.value)}>
-        <option value="dracula">Dracula</option>
-        <option value="material">Material</option>
-      </select>
-    </span> */}
+                        <span> <input type="checkbox" onChange = {(e)=>{
+                            if (e.target.checked) {
+                                setUseCode(true)
+                              } else {
+                                setUseCode(false)
+                              }
+                        }}/> Use my code for AI assistant</span>
                         <span>
                             <button
                                 disabled={isRunning}
