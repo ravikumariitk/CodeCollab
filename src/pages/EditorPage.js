@@ -120,7 +120,7 @@ const EditorPage = () => {
             const { run } = response.data;
             console.log(response)
             setIsRunning(false)
-            if (!run.stdout) toast.error('Compilation Failed');
+            if (!run.stdout) toast.error('Compilation Failed! You can ask AI Assistant to resolve the issue');
             else toast.success('Compilation Successful');
             setOutput(run.stdout || run.stderr || 'No output');
         } catch (error) {
