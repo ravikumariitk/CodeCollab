@@ -6,18 +6,24 @@
 
 - **Shared IDE**: Collaborate with multiple participants in a single integrated development environment.
 - **Real-time Video & Audio**: Connect with peers using live video and audio streams.
+- **Shared White Canvas**: Collaborate visually using a shared whiteboard for sketches, diagrams, or notes.
+- **AI Debugging**: Leverage Gemini AI to debug code in real-time and enhance collaboration efficiency.
 - **Peer-to-Peer Communication**: Powered by [PeerJS](https://peerjs.com) for efficient, scalable communication.
 - **Retry Mechanism**: Automatically retries failed connections to ensure a reliable user experience.
 - **Media Controls**: Mute/unmute audio and hide/show video with intuitive controls.
-
 - **Responsive Design**: Adapts to various screen sizes for a smooth user experience.
 
 ---
+## Video Demo 🎥
 
+<video src="/public/video-demo.mp4" controls width="600"></video>
 
-## Demo ✈️
+---
+
+## Live Demo ✈️
 
 [app-codecollab.onrender.com/ ](https://app-codecollab.onrender.com/)
+
 ---
 
 ## Technologies Used 🛠️
@@ -27,7 +33,8 @@
 - **Peer-to-Peer Communication**: PeerJS
 - **Notifications**: react-hot-toast
 - **Media Streaming**: WebRTC APIs (`getUserMedia`)
-- **Collaboration**: Conflict-free replicated data types ( [Yjs](https://github.com/yjs/yjs) )
+- **Collaboration**: Conflict-free replicated data types ([Yjs](https://github.com/yjs/yjs))
+- **AI Debugging**: Gemini AI
 - **Styling**: CSS
 
 ---
@@ -77,25 +84,31 @@
    - Enable/disable video and audio as required using the control buttons.
 
 4. **Collaborate**:
-   - Start coding with other participants in the shared IDE.
+   - Start coding with other participants in the shared IDE or use the shared white canvas for visual collaboration.
 
-5. **Reconnect on Failure**:
+5. **Debug with AI**:
+   - Use the Gemini AI feature to debug and optimize code in real time.
+
+6. **Reconnect on Failure**:
    - The app automatically retries to establish the connection if it fails.
 
 ---
 
-## Project Structure 🔂
+## Project Structure 🔃
 
 ```plaintext
 CodeTogether/
-├── public/            # Static assets
-├── src/               # Source code
-│   ├── components/    # React components
-│   │   └── Camera.js  # Core video conferencing logic
-│   ├── App.js         # Main application component
-│   └── index.js       # React DOM renderer
-├── package.json       # Dependencies and scripts
-└── README.md          # Project documentation
+├── public/                 # Static assets
+├── src/                    # Source code
+│   ├── components/         # React components
+│   │   ├── Camera.js       # Core video conferencing logic
+│   │   ├── EditorWindow.js # Shared IDE component
+│   │   ├── WhiteBoard.js   # Shared white canvas component
+│   │   └── aiAgent.js      # AI debugging logic
+│   ├── App.js              # Main application component
+│   └── index.js            # React DOM renderer
+├── package.json            # Dependencies and scripts
+└── README.md               # Project documentation
 ```
 
 ---
@@ -133,14 +146,17 @@ Contributions are welcome! Please follow these steps:
 - Add chat functionality.
 - Support for screen sharing.
 - Improved UI/UX design.
+- Enhanced AI capabilities for code suggestions and optimizations.
 
 ---
 
-## Acknowledgments 🙌
+## Acknowledgments 🙏
 
 - [PeerJS](https://peerjs.com)
 - [React](https://reactjs.org)
 - [WebRTC](https://webrtc.org)
+- [Yjs](https://github.com/yjs/yjs)
+- [Gemini AI](https://gemini.com)
 
 ---
 
