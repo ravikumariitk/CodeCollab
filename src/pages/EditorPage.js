@@ -215,7 +215,7 @@ const EditorPage = () => {
             <AiAgent code = {code} language = {language} useCode = {useCode}></AiAgent>
             </div>
             <WhiteBoard canvas = {canvas} setCanvas = {setCanvas} roomId={roomId}></WhiteBoard>
-            <div className="editorWrap" style={{ display :  ai=='none'?'block':'none'}}>
+            <div className="editorWrap" style={{ display :  (ai=='none' && canvas == 'none')?'block':'none'}}>
               <Editor socketRef = {socketRef} roomId = {roomId} username = {location.state?.username} code = {code} setCode = {setCode} language= {language}></Editor>
                 <div className="codeTerminal">
                     <div className="terminalHeader">
@@ -260,11 +260,10 @@ const EditorPage = () => {
                                 onChange={(e) => setInput(e.target.value)}
                             ></textarea>
                         </div>
-
                         <div className="outputSection">
                             <label>Output:</label>
                             <textarea
-                                rows="6"
+                                rows="7"
                                 readOnly
                                 value={output}
                                 placeholder="Output will be displayed here..."

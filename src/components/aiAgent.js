@@ -94,7 +94,7 @@ function AiAgent({ code, language, useCode }) {
                 {/* Show thinking message while AI is processing */}
                 {isThinking && (
                     <div style={styles.message}>
-                        <span style={{ color: '#fff' }}>AI is thinking...</span>
+                        <span style={{ color: '#fff' }}>Thinking...</span>
                     </div>
                 )}
             </div>
@@ -132,7 +132,7 @@ const styles = {
         color: '#fff',
     },
     chatBox: {
-        width: '90%',
+        width: '97%',
         height: '87%',
         border: '1px solid #444',
         borderRadius: '8px',
@@ -155,7 +155,7 @@ const styles = {
     inputBox: {
         display: 'flex',
         flexDirection: 'row',
-        width: '91.8%',
+        width: '99%',
         alignItems: 'center',
     },
     input: {
