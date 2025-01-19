@@ -8,6 +8,8 @@
 - **Real-time Video & Audio**: Connect with peers using live video and audio streams.
 - **Shared White Canvas**: Collaborate visually using a shared whiteboard for sketches, diagrams, or notes.
 - **AI Debugging**: Leverage Gemini AI to debug code in real-time and enhance collaboration efficiency.
+- **Test Case Generator**: Automatically generate test cases to ensure your code performs as expected.
+- **Chat Box**: Engage in seamless text-based communication with peers for quick discussions and feedback
 - **Peer-to-Peer Communication**: Powered by [PeerJS](https://peerjs.com) for efficient, scalable communication.
 - **Retry Mechanism**: Automatically retries failed connections to ensure a reliable user experience.
 - **Media Controls**: Mute/unmute audio and hide/show video with intuitive controls.
