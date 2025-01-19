@@ -18,7 +18,7 @@ import {
     useParams,
 } from 'react-router-dom';
 import { use } from 'react';
-
+import Chat from '../components/Chat';
 const EditorPage = () => {
     const [run, setRun] = useState("Run Code");
     const [input, setInput] = useState("");
@@ -104,7 +104,52 @@ const EditorPage = () => {
             console.error(err);
         }
     }
+    async function getAiResponse(){
+        try{
+            const apiRequestBody = {
+                contents: [
+                    {
+                        role: 'user',
+                        parts: [
+                            {
+                                text: `Based on the code : ${code} generate random a testcase just give me the test case nothing else if the code doest have input then reponse.`,
+                            },
+                        ],
+                    },
+                ],
+                generationConfig: {
+                    temperature: 1,
+                    topK: 40,
+                    topP: 0.95,
+                    maxOutputTokens: 8192,
+                    responseMimeType: 'text/plain',
+                },
+            };
 
+            const response = await axios.post(
+                'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyCl28D4MIbcC-KnnEakRg7linO6K5OzMiE',
+                apiRequestBody,
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            return response.data.candidates[0].content.parts[0].text;
+            // console.log(aiMessage);
+        }catch(error){
+            toast.error("Something went wrong! please try again")
+        }
+    }
+    const createRandomTestCases = async(e) => {
+        e.preventDefault();
+        const response = await getAiResponse();
+        setInput(response)
+        console.log(input,response)
+        document.getElementById("input").value = response
+        toast.success("Test case generated")
+    }
     const runCode = async () => {
         try {
             setIsRunning(true)
@@ -211,6 +256,8 @@ const EditorPage = () => {
                     Leave
                 </button>
             </div>
+
+            <div className = 'middle'>
             <div style={{display:ai}}>
             <AiAgent code = {code} language = {language} useCode = {useCode}></AiAgent>
             </div>
@@ -235,7 +282,7 @@ const EditorPage = () => {
                               }
                         }}/> Use my code for AI assistant</span>
                         <span>
-                            <button
+                           &nbsp; <button
                                 disabled={isRunning}
                                 className="runButton"
                                 onClick={runCode}>
@@ -253,11 +300,17 @@ const EditorPage = () => {
 
                     <div className="terminalBody">
                         <div className="inputSection">
-                            <label>Input:</label>
+                            <label>Input:  <a
+                            onClick={createRandomTestCases}
+                            href=""
+                            className="createNewBtn"
+                        >Generate a random testcase</a></label>
                             <textarea
-                                rows="4"
+                                id = "input"
+                                rows="4" 
                                 placeholder="Enter input here..."
-                                onChange={(e) => setInput(e.target.value)}
+                                onChange={(e) => setInput(e.target.value)
+                                }
                             ></textarea>
                         </div>
                         <div className="outputSection">
@@ -273,7 +326,8 @@ const EditorPage = () => {
                 </div>
 
             </div>
-
+            </div>
+            <div className = "right"><Chat roomId = {roomId} username = {location.state?.username} socketRef ={socketRef}></Chat></div>
         </div>
     );
 };

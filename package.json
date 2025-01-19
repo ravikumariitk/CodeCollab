@@ -14,6 +14,7 @@
     "@tldraw/sync": "^3.7.2",
     "axios": "^1.7.9",
     "codemirror": "^5.65.2",
+    "dompurify": "^3.2.3",
     "express": "^4.17.3",
     "monaco-editor": "^0.52.2",
     "peer": "^1.0.2",

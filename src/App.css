@@ -107,7 +107,7 @@ footer a:hover {
     height: 100vh;
     text-overflow: clip;
     display: grid;
-    grid-template-columns: 230px 1fr;
+    grid-template-columns: 230px 1fr 1fr;
 }
 
 .aside {
@@ -117,10 +117,20 @@ footer a:hover {
     display: flex;
     flex-direction: column;
 }
+.right {
+  background: #1c1e29;
+  /* padding: 16px; */
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
 .asideInner {
     flex: 1;
 }
-
+.middle{
+  width : 60vw
+}
 .clientsList {
     display: flex;
     align-items: center;
@@ -174,7 +184,7 @@ footer a:hover {
   }
   
   .terminalHeader span {
-    margin-right: 15px;
+    margin-right: 0px;
   }
   
   .terminalHeader select, 
@@ -216,7 +226,7 @@ footer a:hover {
   }
   
   textarea {
-    width: 98%;
+    width: 100%;
     background: #1e1e1e;
     color: white;
     border: none;

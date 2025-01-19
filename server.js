@@ -53,6 +53,13 @@ io.on('connection', (socket) => {
             });
         });
     });
+    socket.on("chat", ({roomId , username , text}) => {
+        // console.log(text)
+        socket.in(roomId).emit('chat-r', {
+           userName : username,
+           text
+        });
+    });
 
     socket.on("video-stream", (data) => {
         const videoFrame = data.frameData;

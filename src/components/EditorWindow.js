@@ -91,6 +91,7 @@ function randomColor(){
     <>
       <Editor
         height="60vh"
+        width="60vw"
         language={language}
         defaultValue={"//cook your dish here "}
         theme={"vs-dark"}
