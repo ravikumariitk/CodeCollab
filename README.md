@@ -16,11 +16,6 @@
 - **Responsive Design**: Adapts to various screen sizes for a smooth user experience.
 
 ---
-## Video Demo 🎥
-
-<video src="/public/video-demo.mp4" controls width="600"></video>
-
----
 
 ## Live Demo ✈️
 
