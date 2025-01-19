@@ -140,7 +140,6 @@ Contributions are welcome! Please follow these steps:
 
 ## Future Enhancements 🛠️
 
-- Add chat functionality.
 - Support for screen sharing.
 - Improved UI/UX design.
 - Enhanced AI capabilities for code suggestions and optimizations.
