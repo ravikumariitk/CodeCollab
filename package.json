@@ -34,7 +34,7 @@
     "react-webcam": "^7.2.0",
     "socket.io": "^4.4.1",
     "socket.io-client": "^4.4.1",
-    "tldraw": "^3.7.2",
+    "tldraw": "^3.13.1",
     "uuid": "^8.3.2",
     "web-vitals": "^2.1.4",
     "y-codemirror": "^3.0.1",
