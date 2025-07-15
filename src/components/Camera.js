@@ -16,7 +16,13 @@ function Camera({ socketId, clients }) {
   useEffect(() => {
     if (!socketId) return;
 
-    const peer = new Peer(socketId);
+    const peer = new Peer(socketId, {
+    host: 'codecollabsignalserver.onrender.com',
+    port: 443,
+    secure: true,
+    path: '/',
+    });
+
 
     peer.on('open', (id) => {
       console.log(`Expected ID: ${socketId}, Assigned Peer ID: ${id}`);
