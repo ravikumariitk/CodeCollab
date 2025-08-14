@@ -1,55 +1,57 @@
 const WebSocket = require('ws');
 const http = require('http');
 
-// Create an HTTP server for health checks
 const server = http.createServer((req, res) => {
   res.writeHead(200);
   res.end('OK');
 });
 
-// Combine WebSocket with HTTP server
 const wss = new WebSocket.Server({ server });
-const clients = new Map();
+const rooms = new Map();
 
 wss.on('connection', (ws) => {
-  console.log('Client connected');
-  
-  ws.on('message', (message) => {
-    console.log(`Received message => ${message}`);
-    const parsedMessage = JSON.parse(message);
+  let currentRoom = null;
 
-    // Handle signaling messages
-    if (parsedMessage.type === 'register') {
-      clients.set(parsedMessage.peerId, ws);
-      console.log(`Registered peer: ${parsedMessage.peerId}`);
-    } else if (parsedMessage.type === 'signal') {
-      const targetWs = clients.get(parsedMessage.target);
-      if (targetWs) {
-        targetWs.send(JSON.stringify(parsedMessage));
+  ws.on('message', (message) => {
+    try {
+      const msg = JSON.parse(message);
+
+      // Expect the message to contain room name
+      if (msg.room) {
+        currentRoom = msg.room;
+        if (!rooms.has(currentRoom)) {
+          rooms.set(currentRoom, new Set());
+        }
+        rooms.get(currentRoom).add(ws);
       }
+
+      // Broadcast message to all clients in the same room except sender
+      if (currentRoom) {
+        rooms.get(currentRoom).forEach(client => {
+          if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(message);
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Error parsing message:', err);
     }
   });
 
   ws.on('close', () => {
-    console.log('Client disconnected');
-    clients.forEach((clientWs, peerId) => {
-      if (clientWs === ws) {
-        clients.delete(peerId);
-        console.log(`Unregistered peer: ${peerId}`);
+    if (currentRoom && rooms.has(currentRoom)) {
+      rooms.get(currentRoom).delete(ws);
+      if (rooms.get(currentRoom).size === 0) {
+        rooms.delete(currentRoom);
       }
-    });
+    }
   });
 
   ws.on('error', (err) => {
-    console.error('WebSocket client error:', err);
+    console.error('WebSocket error:', err);
   });
 });
 
-wss.on('error', (err) => {
-  console.error('WebSocket server error:', err);
-});
-
-// Start the server
 const port = process.env.PORT || 1234;
 server.listen(port, () => {
   console.log(`Signaling server is running on port ${port}`);
