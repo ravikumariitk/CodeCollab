@@ -24,7 +24,7 @@ export default function EditorWindow({socketRef , roomId , username , code, setC
 
     // Connect to peers with WebSocket
     console.log("Signal url", process.env.REACT_APP_SIGNAL_URL)
-    const provider = new WebrtcProvider('my-room-id', doc, {
+    const provider = new WebrtcProvider(roomId, doc, {
   signaling: ['wss://codecollabsignalserver.onrender.com'],
   peerOpts: {
     config: {
