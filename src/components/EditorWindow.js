@@ -25,13 +25,26 @@ export default function EditorWindow({socketRef , roomId , username , code, setC
     // Connect to peers with WebSocket
     console.log("Signal url", process.env.REACT_APP_SIGNAL_URL)
     const provider = new WebrtcProvider(roomId, doc, {
-      signaling: [
-        'wss://signaling.yjs.dev',
-        'wss://y-webrtc-signaling-eu.herokuapp.com',
-        'wss://y-webrtc-signaling-us.herokuapp.com'
-      ],
-  password: null
+  signaling: [
+    'wss://signaling.yjs.dev',
+    'wss://y-webrtc-signaling-eu.herokuapp.com',
+    'wss://y-webrtc-signaling-us.herokuapp.com'
+  ],
+  password: null,
+  peerOpts: {
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },  // Free STUN
+        {
+          urls: 'turn:openrelay.metered.ca:80',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        }
+      ]
+    }
+  }
 });
+
 
     
     const type = doc.getText(roomId);
