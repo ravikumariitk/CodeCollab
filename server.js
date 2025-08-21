@@ -4,9 +4,11 @@ const http = require('http');
 const path = require('path');
 const { Server } = require('socket.io');
 const ACTIONS = require('./src/Actions');
-const Y = require('yjs');
-const { Awareness } = require('y-protocols/awareness');
+const { PeerServer } = require('peer');
+const Y = require("yjs");
 const { encodeStateAsUpdate, applyUpdate } = Y;
+const { WebsocketProvider } = require('y-websocket');
+const ydoc = new Y.Doc();
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -16,48 +18,37 @@ const io = new Server(server, {
   }
 });
 
+
 app.use(express.static('build'));
 app.use((req, res, next) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
 const userSocketMap = {};
-const docs = new Map(); // roomId -> { ydoc, awareness }
-
-function getYDoc(roomId) {
-    if (!docs.has(roomId)) {
-        const ydoc = new Y.Doc();
-        const awareness = new Awareness(ydoc);
-        docs.set(roomId, { ydoc, awareness });
-    }
-    return docs.get(roomId);
-}
 
 function getAllConnectedClients(roomId) {
     return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(
-        (socketId) => ({
-            socketId,
-            username: userSocketMap[socketId],
-        })
+        (socketId) => {
+            return {
+                socketId,
+                username: userSocketMap[socketId],
+            };
+        }
     );
 }
 
 io.on('connection', (socket) => {
-    console.log('Socket connected:', socket.id);
+    console.log('socket connected', socket.id);
 
     socket.on(ACTIONS.JOIN, ({ roomId, username }) => {
         userSocketMap[socket.id] = username;
         socket.join(roomId);
 
-        const { ydoc, awareness } = getYDoc(roomId);
+        // Initialize the WebSocket provider for real-time document synchronization
+        // const provider = new WebsocketProvider('ws://localhost:1234', roomId, ydoc);
 
-        // Send current document state
-        const stateUpdate = Y.encodeStateAsUpdate(ydoc);
-        socket.emit('yjs-update', stateUpdate);
-
-        // Set awareness for the new client
-        const clientID = socket.id;
-        awareness.setLocalStateField('user', { name: username });
+        const initialUpdate = Y.encodeStateAsUpdate(ydoc);
+        io.to(socket.id).emit(ACTIONS.INITIAL_DOCUMENT, initialUpdate);
 
         const clients = getAllConnectedClients(roomId);
         clients.forEach(({ socketId }) => {
@@ -68,36 +59,23 @@ io.on('connection', (socket) => {
             });
         });
     });
-
-    // Handle Yjs document updates
-    socket.on('yjs-update', ({ roomId, update }) => {
-        const { ydoc } = getYDoc(roomId);
-        Y.applyUpdate(ydoc, update); // Apply update to the server doc
-        socket.to(roomId).emit('yjs-update', update); // Broadcast to others
-    });
-
-    // Awareness updates (presence info like cursor, user status)
-    socket.on('awareness-update', ({ roomId, update }) => {
-        const { awareness } = getYDoc(roomId);
-        awareness.applyUpdate(update);
-        socket.to(roomId).emit('awareness-update', update);
-    });
-
-    // Chat message
-    socket.on('chat', ({ roomId, username, text }) => {
-        socket.in(roomId).emit('chat-r', { userName: username, text });
-    });
-
-    // Video streaming
-    socket.on('video-stream', (data) => {
-        socket.in(data.roomId).emit('video-incoming', {
-            videoFrame: data.frameData,
-            socketId: data.socketId,
-            username: userSocketMap[data.socketId]
+    socket.on("chat", ({roomId , username , text}) => {
+        // console.log(text)
+        socket.in(roomId).emit('chat-r', {
+           userName : username,
+           text
         });
     });
 
-    // Disconnect
+    socket.on("video-stream", (data) => {
+        const videoFrame = data.frameData;
+        socket.in(data.roomId).emit('video-incoming', {
+            videoFrame : videoFrame,
+            socketId : data.socketId,
+            username : userSocketMap[data.socketId]
+        });
+    });
+
     socket.on('disconnecting', () => {
         const rooms = [...socket.rooms];
         rooms.forEach((roomId) => {
@@ -107,6 +85,7 @@ io.on('connection', (socket) => {
             });
         });
         delete userSocketMap[socket.id];
+        socket.leave();
     });
 });
 
