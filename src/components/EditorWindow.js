@@ -56,10 +56,6 @@ export default function EditorWindow({socketRef , roomId , username , code, setC
   }
 });
 
-    
-
-
-    
     const type = doc.getText(roomId);
     // All of our network providers implement the awareness crdt
     const awareness = provider.awareness

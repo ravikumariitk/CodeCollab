@@ -1,47 +1,58 @@
 const WebSocket = require('ws');
-const { WebSocketServer } = WebSocket;
-
-import http from 'http';
+const http = require('http');
 
 const server = http.createServer((req, res) => {
   res.writeHead(200);
   res.end('OK');
 });
 
-const wss = new WebSocketServer({ server });
+const wss = new WebSocket.Server({ server });
 const rooms = new Map();
 
 wss.on('connection', (ws) => {
-  let room = null;
+  let currentRoom = null;
 
-  ws.on('message', (data) => {
+  ws.on('message', (message) => {
     try {
-      const msg = JSON.parse(data);
+      const msg = JSON.parse(message);
+
+      // Expect the message to contain room name
       if (msg.room) {
-        room = msg.room;
-        if (!rooms.has(room)) rooms.set(room, new Set());
-        rooms.get(room).add(ws);
+        currentRoom = msg.room;
+        if (!rooms.has(currentRoom)) {
+          rooms.set(currentRoom, new Set());
+        }
+        rooms.get(currentRoom).add(ws);
       }
 
-      if (room && rooms.has(room)) {
-        rooms.get(room).forEach(client => {
-          if (client !== ws && client.readyState === 1) {
-            client.send(data);
+      // Broadcast message to all clients in the same room except sender
+      if (currentRoom) {
+        rooms.get(currentRoom).forEach(client => {
+          if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(message);
           }
         });
       }
     } catch (err) {
-      console.error('Message parse error:', err);
+      console.error('Error parsing message:', err);
     }
   });
 
   ws.on('close', () => {
-    if (room && rooms.has(room)) {
-      rooms.get(room).delete(ws);
-      if (rooms.get(room).size === 0) rooms.delete(room);
+    if (currentRoom && rooms.has(currentRoom)) {
+      rooms.get(currentRoom).delete(ws);
+      if (rooms.get(currentRoom).size === 0) {
+        rooms.delete(currentRoom);
+      }
     }
+  });
+
+  ws.on('error', (err) => {
+    console.error('WebSocket error:', err);
   });
 });
 
-const PORT = process.env.PORT || 1234;
-server.listen(PORT, () => console.log(`Signaling server running on ${PORT}`));
+const port = process.env.PORT || 1234;
+server.listen(port, () => {
+  console.log(`Signaling server is running on port ${port}`);
+});
