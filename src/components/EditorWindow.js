@@ -24,42 +24,8 @@ export default function EditorWindow({socketRef , roomId , username , code, setC
 
     // Connect to peers with WebSocket
     console.log("Signal url", process.env.REACT_APP_SIGNAL_URL)
-    const provider = new WebrtcProvider(roomId, doc, {
-  signaling: [
-    'wss://signaling.yjs.dev',
-    'wss://y-webrtc-signaling-eu.herokuapp.com',
-    'wss://y-webrtc-signaling-us.herokuapp.com'
-  ],
-  password: null,
-  peerOpts: {
-    config: {
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' }, // STUN
-        { urls: 'stun:stun1.l.google.com:19302' },
-        {
-          urls: 'turn:relay.metered.ca:80',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        },
-        {
-          urls: 'turn:relay.metered.ca:443',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        },
-        {
-          urls: 'turn:relay.metered.ca:443?transport=tcp',
-          username: 'openrelayproject',
-          credential: 'openrelayproject'
-        }
-      ]
-    }
-  }
-});
+    const provider = new WebsocketProvider('wss://app-codecollab.onrender.com/', roomId, doc)
 
-    
-
-
-    
     const type = doc.getText(roomId);
     // All of our network providers implement the awareness crdt
     const awareness = provider.awareness

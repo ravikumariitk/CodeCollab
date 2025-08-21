@@ -4,11 +4,8 @@ const http = require('http');
 const path = require('path');
 const { Server } = require('socket.io');
 const ACTIONS = require('./src/Actions');
-const { PeerServer } = require('peer');
 const Y = require("yjs");
 const { encodeStateAsUpdate, applyUpdate } = Y;
-const { WebsocketProvider } = require('y-websocket');
-const ydoc = new Y.Doc();
 
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -18,22 +15,27 @@ const io = new Server(server, {
   }
 });
 
-
 app.use(express.static('build'));
 app.use((req, res, next) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
 const userSocketMap = {};
+const docs = new Map(); // roomId -> Y.Doc
+
+function getYDoc(roomId) {
+    if (!docs.has(roomId)) {
+        docs.set(roomId, new Y.Doc());
+    }
+    return docs.get(roomId);
+}
 
 function getAllConnectedClients(roomId) {
     return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(
-        (socketId) => {
-            return {
-                socketId,
-                username: userSocketMap[socketId],
-            };
-        }
+        (socketId) => ({
+            socketId,
+            username: userSocketMap[socketId],
+        })
     );
 }
 
@@ -44,11 +46,11 @@ io.on('connection', (socket) => {
         userSocketMap[socket.id] = username;
         socket.join(roomId);
 
-        // Initialize the WebSocket provider for real-time document synchronization
-        // const provider = new WebsocketProvider('ws://localhost:1234', roomId, ydoc);
+        const ydoc = getYDoc(roomId);
 
-        const initialUpdate = Y.encodeStateAsUpdate(ydoc);
-        io.to(socket.id).emit(ACTIONS.INITIAL_DOCUMENT, initialUpdate);
+        // Send current state of the document to the new client
+        const stateUpdate = Y.encodeStateAsUpdate(ydoc);
+        socket.emit('yjs-update', stateUpdate);
 
         const clients = getAllConnectedClients(roomId);
         clients.forEach(({ socketId }) => {
@@ -59,20 +61,24 @@ io.on('connection', (socket) => {
             });
         });
     });
-    socket.on("chat", ({roomId , username , text}) => {
-        // console.log(text)
-        socket.in(roomId).emit('chat-r', {
-           userName : username,
-           text
-        });
+
+    // When client sends Yjs update
+    socket.on('yjs-update', ({ roomId, update }) => {
+        const ydoc = getYDoc(roomId);
+        Y.applyUpdate(ydoc, update); // Apply update to server doc
+        socket.to(roomId).emit('yjs-update', update); // Broadcast to others
+    });
+
+    socket.on("chat", ({ roomId, username, text }) => {
+        socket.in(roomId).emit('chat-r', { userName: username, text });
     });
 
     socket.on("video-stream", (data) => {
         const videoFrame = data.frameData;
         socket.in(data.roomId).emit('video-incoming', {
-            videoFrame : videoFrame,
-            socketId : data.socketId,
-            username : userSocketMap[data.socketId]
+            videoFrame,
+            socketId: data.socketId,
+            username: userSocketMap[data.socketId]
         });
     });
 
@@ -85,7 +91,6 @@ io.on('connection', (socket) => {
             });
         });
         delete userSocketMap[socket.id];
-        socket.leave();
     });
 });
 

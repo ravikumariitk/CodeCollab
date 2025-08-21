@@ -17,8 +17,8 @@ function Camera({ socketId, clients }) {
     if (!socketId) return;
 
     const peer = new Peer(socketId, {
-    host: 'codecollabsignalserver.onrender.com',
-    port: 443,
+    host: 'http://localhost',
+    port: 5001,
     secure: true,
     path: '/',
     });
