@@ -3,7 +3,7 @@ import { useRef } from "react";
 import { Editor } from "@monaco-editor/react";
 import * as Y from "yjs";
 import { MonacoBinding } from "y-monaco";
-import { Awareness } from "y-protocols/awareness";
+import { Awareness, encodeAwarenessUpdate } from "y-protocols/awareness";
 
 export default function EditorWindow({ socketRef, roomId, username, code, setCode, language }) {
   const theme = useTheme();
@@ -47,7 +47,7 @@ export default function EditorWindow({ socketRef, roomId, username, code, setCod
 
     // Broadcast awareness updates to server
     awareness.on("update", () => {
-      const update = Y.encodeAwarenessUpdate(
+      const update = encodeAwarenessUpdate(
         awareness,
         Array.from(awareness.getStates().keys())
       );
