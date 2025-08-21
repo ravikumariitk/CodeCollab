@@ -4,7 +4,8 @@ const http = require('http');
 const path = require('path');
 const { Server } = require('socket.io');
 const ACTIONS = require('./src/Actions');
-const Y = require("yjs");
+const Y = require('yjs');
+const { Awareness } = require('y-protocols/awareness');
 const { encodeStateAsUpdate, applyUpdate } = Y;
 
 const server = http.createServer(app);
@@ -21,11 +22,13 @@ app.use((req, res, next) => {
 });
 
 const userSocketMap = {};
-const docs = new Map(); // roomId -> Y.Doc
+const docs = new Map(); // roomId -> { ydoc, awareness }
 
 function getYDoc(roomId) {
     if (!docs.has(roomId)) {
-        docs.set(roomId, new Y.Doc());
+        const ydoc = new Y.Doc();
+        const awareness = new Awareness(ydoc);
+        docs.set(roomId, { ydoc, awareness });
     }
     return docs.get(roomId);
 }
@@ -40,17 +43,21 @@ function getAllConnectedClients(roomId) {
 }
 
 io.on('connection', (socket) => {
-    console.log('socket connected', socket.id);
+    console.log('Socket connected:', socket.id);
 
     socket.on(ACTIONS.JOIN, ({ roomId, username }) => {
         userSocketMap[socket.id] = username;
         socket.join(roomId);
 
-        const ydoc = getYDoc(roomId);
+        const { ydoc, awareness } = getYDoc(roomId);
 
-        // Send current state of the document to the new client
+        // Send current document state
         const stateUpdate = Y.encodeStateAsUpdate(ydoc);
         socket.emit('yjs-update', stateUpdate);
+
+        // Set awareness for the new client
+        const clientID = socket.id;
+        awareness.setLocalStateField('user', { name: username });
 
         const clients = getAllConnectedClients(roomId);
         clients.forEach(({ socketId }) => {
@@ -62,26 +69,35 @@ io.on('connection', (socket) => {
         });
     });
 
-    // When client sends Yjs update
+    // Handle Yjs document updates
     socket.on('yjs-update', ({ roomId, update }) => {
-        const ydoc = getYDoc(roomId);
-        Y.applyUpdate(ydoc, update); // Apply update to server doc
+        const { ydoc } = getYDoc(roomId);
+        Y.applyUpdate(ydoc, update); // Apply update to the server doc
         socket.to(roomId).emit('yjs-update', update); // Broadcast to others
     });
 
-    socket.on("chat", ({ roomId, username, text }) => {
+    // Awareness updates (presence info like cursor, user status)
+    socket.on('awareness-update', ({ roomId, update }) => {
+        const { awareness } = getYDoc(roomId);
+        awareness.applyUpdate(update);
+        socket.to(roomId).emit('awareness-update', update);
+    });
+
+    // Chat message
+    socket.on('chat', ({ roomId, username, text }) => {
         socket.in(roomId).emit('chat-r', { userName: username, text });
     });
 
-    socket.on("video-stream", (data) => {
-        const videoFrame = data.frameData;
+    // Video streaming
+    socket.on('video-stream', (data) => {
         socket.in(data.roomId).emit('video-incoming', {
-            videoFrame,
+            videoFrame: data.frameData,
             socketId: data.socketId,
             username: userSocketMap[data.socketId]
         });
     });
 
+    // Disconnect
     socket.on('disconnecting', () => {
         const rooms = [...socket.rooms];
         rooms.forEach((roomId) => {
